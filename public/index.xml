@@ -6,9 +6,19 @@
     <description>Recent content on aliasliyu4</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
+    <lastBuildDate>Sun, 02 Feb 2020 13:46:04 +0800</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>My First Post</title>
+      <link>/posts/my-first-post/</link>
+      <pubDate>Sun, 02 Feb 2020 13:46:04 +0800</pubDate>
+      
+      <guid>/posts/my-first-post/</guid>
+      <description></description>
+    </item>
     
   </channel>
 </rss>
