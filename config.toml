@@ -1,4 +1,10 @@
 baseURL = "/"
 languageCode = "en-us"
 title = "aliasliyu4"
-theme = "ananke"
+theme = "hyde"
+
+[params]
+#博客简介
+description = "不再是少年"
+#博客主题颜色
+themeColor = "theme-base-08"
