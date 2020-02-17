@@ -52,12 +52,11 @@
     <div class="post">
   <h1>死磕，Go-Sql-Driver执行流程</h1>
   <time datetime=2020-02-17T17:11:44&#43;0800 class="post-date">Mon, Feb 17, 2020</time>
-  <p>Golang的database/sql包定义了常用的操作数据的方法，他提供了一个抽象，具体的driver依赖不同的数据库。</p>
-<p>比如mysql驱动比较有名的<a href="https://github.com/go-sql-driver/mysql" title="">MySql</a>。</p>
-<p>还有Sql Server使用较为广泛的库是 <a href="https://github.com/denisenkom/go-mssqldb" title="">SqlServer</a>。</p>
-<p>使用者只需要提供DSN(data source name)或者tcp连接, open() db之后会返回一个*sql.DB对象。DB本身没有连接数据库，</p>
-<p>只有当Query/Exec之后才会连接数据库。</p>
-<!-- raw HTML omitted -->
+  <p>Golang的database/sql包定义了常用的操作数据的方法，他提供了一个抽象，具体的driver依赖不同的数据库。
+比如mysql驱动比较有名的<a href="https://github.com/go-sql-driver/mysql" title="">MySql</a>。
+还有Sql Server使用较为广泛的库是 <a href="https://github.com/denisenkom/go-mssqldb" title="">SqlServer</a>。
+使用者只需要提供DSN(data source name)或者tcp连接, open() db之后会返回一个*sql.DB对象。DB本身没有连接数据库，
+只有当Query/Exec之后才会连接数据库。</p>
 <p>假设需要从数据库中查询数据</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
 
@@ -323,7 +322,6 @@
 <p>这就像是OSI网络模型， 又分层的感觉在里面， 任何一层有改动只需要动其中一层即可</p>
 <p>但是不能说这样是没有问题的，比如driver和driverctx显然是兼容之后的结果，导致阅读代码的时候需要来回去看</p>
 <p>总体而言golang database/sql的实现是非常有借鉴和学习的意义， 望一起努力！！！💪💪💪。</p>
-
 </div>
 
 

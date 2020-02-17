@@ -6,25 +6,9 @@
     <description>Recent content on aliasliyu4</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 17 Feb 2020 17:11:44 +0800</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>死磕，Go-Sql-Driver执行流程</title>
-      <link>/go-sqlserver/</link>
-      <pubDate>Mon, 17 Feb 2020 17:11:44 +0800</pubDate>
-      
-      <guid>/go-sqlserver/</guid>
-      <description>Golang的database/sql包定义了常用的操作数据的方法，他提供了一个抽象，具体的driver依赖不同的数据库。
-比如mysql驱动比较有名的MySql。
-还有Sql Server使用较为广泛的库是 SqlServer。
-使用者只需要提供DSN(data source name)或者tcp连接, open() db之后会返回一个*sql.DB对象。DB本身没有连接数据库，
-只有当Query/Exec之后才会连接数据库。
-假设需要从数据库中查询数据
-package main import( &amp;#34;database/sql&amp;#34; _ &amp;#34;github.com/denisenkom/go-mssqldb&amp;#34; ) func main(){ db, err := sql.Connect(&amp;#34;mssql&amp;#34;, dataSourceName) if err != nil { panic(fmt.Sprintf(&amp;#34;[db.GetSqlServer] open sql fail:%s&amp;#34;, err.Error())) } if err != nil { Println(err) return } defer db.Close() rows,err := db.Query(&amp;#34;select top 1 foo, bar from test_table&amp;#34;) var foo bar string for rows.Next(){ _,err := row.Scan(&amp;amp;foo, &amp;amp;bar) if err != nil { // do something  } break } // .</description>
-    </item>
     
     <item>
       <title></title>

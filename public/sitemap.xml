@@ -3,18 +3,12 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>/</loc>
-    <lastmod>2020-02-17T17:11:44+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/go-sqlserver/</loc>
-    <lastmod>2020-02-17T17:11:44+08:00</lastmod>
-  </url>
-  
-  <url>
     <loc>/posts/consul/</loc>
     <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/</loc>
   </url>
   
   <url>

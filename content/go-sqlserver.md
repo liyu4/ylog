@@ -3,19 +3,15 @@ title: "死磕，Go-Sql-Driver执行流程"
 date: 2020-02-17T17:11:44+08:00
 draft: true
 ---
-
- Golang的database/sql包定义了常用的操作数据的方法，他提供了一个抽象，具体的driver依赖不同的数据库。
-
- 比如mysql驱动比较有名的[MySql](https://github.com/go-sql-driver/mysql "")。
-
- 还有Sql Server使用较为广泛的库是 [SqlServer](https://github.com/denisenkom/go-mssqldb "")。
-
- 使用者只需要提供DSN(data source name)或者tcp连接, open() db之后会返回一个*sql.DB对象。DB本身没有连接数据库，
-
- 只有当Query/Exec之后才会连接数据库。
+Golang的database/sql包定义了常用的操作数据的方法，他提供了一个抽象，具体的driver依赖不同的数据库。
+比如mysql驱动比较有名的[MySql](https://github.com/go-sql-driver/mysql "")。
+还有Sql Server使用较为广泛的库是 [SqlServer](https://github.com/denisenkom/go-mssqldb "")。
+使用者只需要提供DSN(data source name)或者tcp连接, open() db之后会返回一个*sql.DB对象。DB本身没有连接数据库，
+只有当Query/Exec之后才会连接数据库。
+<!--more-->
 
 
-<!-- more -->
+
 
 
 假设需要从数据库中查询数据
