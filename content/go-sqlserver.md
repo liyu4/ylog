@@ -219,17 +219,13 @@ func (db *DB) exec(ctx context.Context, query string, args []interface{}, strate
 
 ---
 
-
-
-![3Pnec4.png](https://s2.ax1x.com/2020/02/17/3Pnec4.png)
+![image](/img/golang连接池过程分析.jpg)
 
 通过业务场景的带入 ，我们了解了一个查询最终会走到如上的`db.conn()`和`db.exexDC()`，
 
 那么它们经历就是上图所示的流程图逻辑。
 
 仔细看这张图，如果整个连接池为空的时候，必然需要新创建conn,
-
-
 
 
 ```go
