@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.63.2" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="baidu-site-verification" content="75p3MP7oWe" />
+  <script data-ad-client="ca-pub-8179589660494169" async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+  <title>[GO]用go语言实现lru缓存 &middot; aliasliyu4</title>
+  <meta name="description" content="" />
+
+  
+  <link type="text/css" rel="stylesheet" href="/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class="theme-base-08 ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="/"><h1>aliasliyu4</h1></a>
+      <p class="lead">
+       不再是少年 
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="/">Home</a> </li>
+        
+      </ul>
+    </nav>
+
+    <p>&copy; 2020. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>[GO]用go语言实现lru缓存</h1>
+  <time datetime=2020-02-19T14:07:36&#43;0800 class="post-date">Wed, Feb 19, 2020</time>
+  <p>lru缓存，在当今依然非常热门的面试问题，笔者曾经面试【某蜓，音频领域的top公司】就问到了这个问题，当时回答的并不是好。那我们一起来看看如何从0-1实现一个完美的lru缓存。</p>
+<h2 id="简介">简介</h2>
+<p>缓存，在日常的使用中帮助我们降低接口的响应速度，常常是将一些数据加载到<strong>内存</strong>当中，调用方的请求进来之后服务可以直接从内存中拿到数据，然后直接返回，减少了代码里面的逻辑处理，如果有数据查询，或者网络调用的话，这些步骤都可以省去，这些时间是非常可观的。所以非时间敏感的数据是可以加载到内存中去的，但是主机的资源是有限的，这其中内存资源尤其的紧张，所以缓存策略会<strong>限制使用的内存大小</strong>，当缓存满了之后，新进来的元素就需要踢掉旧有的某个元素，这就涉及到<strong>缓存淘汰</strong>。</p>
+<h2 id="缓存淘汰算法介绍">缓存淘汰算法介绍</h2>
+<h4 id="fifofirst-input-first-output">FIFO(first input first output)</h4>
+<p>先进先出，符合人的直观感受，当超过设定的内之后淘汰掉最先进来的元素，如何设计这种数据结构，很容易联想起数组【array】和队列【Queue】，</p>
+<h4 id="数组的实现">数组的实现</h4>
+<p>当然这是很不灵活的方法，但是将其写下来，再跟其他方式对比，才能更加深入肌理。使用go的数组实现FIFO不复杂，但是淘汰e1的时候，数组中的元素需要往后移动，e2占了A[0]的位置，e3占了A[1]的位置，以此类推，直到空出的位置插入e6。</p>
+<p><img src="/img/FIFO-flow-chart.png" alt="image"></p>
+<h5 id="队列的实现">队列的实现</h5>
+<h4 id="lfu">LFU</h4>
+<h4 id="lru">LRU</h4>
+<h4 id="lru-k">LRU-K</h4>
+<h2 id="经典使用场景列举">经典使用场景列举</h2>
+<h2 id="总结">总结</h2>
+</div>
+
+
+    </main>
+
+    
+  </body>
+</html>
