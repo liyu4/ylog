@@ -1,5 +1,5 @@
 ---
-title: "死磕，Go-Sql-Driver执行流程"
+title: "golang数据库连接池的实现[SQLServer]"
 date: 2020-02-17T17:11:44+08:00
 draft: true
 ---
@@ -9,8 +9,6 @@ Golang的database/sql包定义了常用的操作数据的方法，他提供了�
 使用者只需要提供DSN(data source name)或者tcp连接, open() db之后会返回一个*sql.DB对象。DB本身没有连接数据库，
 只有当Query/Exec之后才会连接数据库。
 <!--more-->
-
-
 
 
 
@@ -382,13 +380,4 @@ cmder解析成sql server协议定义的字节流，go-mssqldb负责send/receiver
 
 但是不能说这样是没有问题的，比如driver和driverctx显然是兼容之后的结果，导致阅读代码的时候需要来回去看
 
-总体而言golang database/sql的实现是非常有借鉴和学习的意义， 望一起努力！！！💪💪💪。
-
-
-
-
-
-
-
-
-
+总体而言golang database/sql的实现是非常有借鉴和学习的意义.

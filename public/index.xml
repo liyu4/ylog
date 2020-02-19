@@ -12,11 +12,11 @@
     
     
     <item>
-      <title>死磕，Go-Sql-Driver执行流程</title>
-      <link>/go-sqlserver/</link>
+      <title>golang数据库连接池的实现[SQLServer]</title>
+      <link>/parse-implementation-of-golang-database-sql-connection/</link>
       <pubDate>Mon, 17 Feb 2020 17:11:44 +0800</pubDate>
       
-      <guid>/go-sqlserver/</guid>
+      <guid>/parse-implementation-of-golang-database-sql-connection/</guid>
       <description>&lt;p&gt;Golang的database/sql包定义了常用的操作数据的方法，他提供了一个抽象，具体的driver依赖不同的数据库。
 比如mysql驱动比较有名的&lt;a href=&#34;https://github.com/go-sql-driver/mysql&#34; title=&#34;&#34;&gt;MySql&lt;/a&gt;。
 还有Sql Server使用较为广泛的库是 &lt;a href=&#34;https://github.com/denisenkom/go-mssqldb&#34; title=&#34;&#34;&gt;SqlServer&lt;/a&gt;。
