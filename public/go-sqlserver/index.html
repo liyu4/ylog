@@ -7,7 +7,8 @@
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <script data-ad-client="ca-pub-8179589660494169" async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
   <title>死磕，Go-Sql-Driver执行流程 &middot; aliasliyu4</title>
   <meta name="description" content="" />
 
@@ -219,8 +220,7 @@
 <hr>
 <p><img src="/img/golang%E8%BF%9E%E6%8E%A5%E6%B1%A0%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90.jpg" alt="image"></p>
 <p>通过业务场景的带入 ，我们了解了一个查询最终会走到如上的<code>db.conn()</code>和<code>db.exexDC()</code>，</p>
-<p>那么它们经历就是上图所示的流程图逻辑。</p>
-<p>仔细看这张图，如果整个连接池为空的时候，必然需要新创建conn,</p>
+<p>那么它们经历就是上图所示的流程图逻辑。仔细看这张图，如果整个连接池为空的时候，必然需要新创建conn,</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">DB</span> <span style="color:#66d9ef">struct</span> {
     <span style="color:#a6e22e">connector</span> <span style="color:#a6e22e">driver</span>.<span style="color:#a6e22e">Connector</span>
     <span style="color:#75715e">// ignore ...
