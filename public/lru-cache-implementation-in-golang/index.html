@@ -66,6 +66,10 @@
 <p>当然这是很不灵活的方法，但是将其写下来，再跟其他方式对比，才能更加深入肌理。使用go的数组实现FIFO不复杂，但是淘汰e1的时候，数组中的元素需要往后移动，e2占了A[0]的位置，e3占了A[1]的位置，以此类推，直到空出的位置插入e6。</p>
 <p><img src="/img/FIFO-flow-chart.png" alt="image"></p>
 <h5 id="队列的实现">队列的实现</h5>
+<p>简单的话,使用golang的<code>container/list</code>包双向链表，不考虑时间的话，可以自己实现一个单链表，满足fifo的要求。</p>
+<p>如图所示：
+<img src="/img/single-list.jpg" alt="image"></p>
+<p>链表的好处在于，删除头部元素以及插入尾部元素的时间复杂度都是O(1), 相较于array紧密的内存分布，list是通过指针相连，内存较为分散。但是array需要遍历才能移动元素，最终才能插入一个数据的方式，如果数量较大的情况下，计算的时间非常可观，所以使用list是优于array的。</p>
 <h4 id="lfu">LFU</h4>
 <h4 id="lru">LRU</h4>
 <h4 id="lru-k">LRU-K</h4>
