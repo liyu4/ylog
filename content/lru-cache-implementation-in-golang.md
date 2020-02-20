@@ -14,10 +14,10 @@ lru缓存，在当今依然非常热门的面试问题，笔者曾经面试【�
 
 ## 缓存淘汰算法介绍
 #### FIFO(first input first output)
-先进先出，符合人的直观感受，当超过设定的内之后淘汰掉最先进来的元素，如何设计这种数据结构，很容易联想起数组【array】和队列【Queue】，
+先进先出，符合人的直观感受，当超过设定的内存size之后淘汰掉先进的元素，如何设计这种数据结构，很容易联想起数组【array】和队列【Queue】，
 
 #### 数组的实现
-当然这是很不灵活的方法，但是将其写下来，再跟其他方式对比，才能更加深入肌理。使用go的数组实现FIFO不复杂，但是淘汰e1的时候，数组中的元素需要往后移动，e2占了A[0]的位置，e3占了A[1]的位置，以此类推，直到空出的位置插入e6。
+当然这是很不灵活的方法，但是将其写下来，再跟其他方式对比，才能更加深入肌理。使用go的数组实现FIFO不复杂，如下图所示：淘汰e1的时候，数组中的元素需要往后移动，e2占了A[0]的位置，e3占了A[1]的位置，以此类推，直到空出的位置插入e6。
 
 ![image](/img/FIFO-flow-chart.png)
 
@@ -27,10 +27,171 @@ lru缓存，在当今依然非常热门的面试问题，笔者曾经面试【�
 如图所示：
 ![image](/img/single-list.jpg)
 
-链表的好处在于，删除头部元素以及插入尾部元素的时间复杂度都是O(1), 相较于array紧密的内存分布，list是通过指针相连，内存较为分散。但是array需要遍历才能移动元素，最终才能插入一个数据的方式，如果数量较大的情况下，计算的时间非常可观，所以使用list是优于array的。
+链表的好处在于，删除头部元素以及插入尾部元素的时间复杂度分别是O(1)，和O(n), 相较于array紧密的内存分布，list是通过指针相连，内存较为分散。但是array需要遍历才能移动元素，最终才能插入一个数据的方式，如果数量较大的情况下，计算的时间非常可观，list找到节点后添加/或者淘汰即可。
 
 #### LFU
+LFU  == least frequently used，最少使用的元素需要被淘汰，最少就意味着，每个元素都需要记录使用的次数，并且是有序的，同理也可以指定需要删除的数量即可，因为被标记为使用次数最少的元素会从缓存中淘汰点。在这，我们会一步一步实现lfu缓存。
 
+
+##### 数据结构
+
+实际上hashtable和双链表就够了，不需要其他复杂的算法。
+
+hashtable对应go里面的map，链表的话，可以使用`container/list`， 实现lfu的流程如下图：
+![image](/img/lfu-flow.jpg)
+
+
+* 缓存元素的次数按照顺序排列，每一个element里面包含了缓存的数据。
+* 缓存数据指向对应的list的node，图中A/B执向了node1，node1出现的次数是1次。
+
+ 第一个数据结构， 这是实际存储缓存的数据，key和value，frequencyParent代表这个数据出现的频次。
+```go
+type CacheItem struct {
+	key             string        // Key of item
+	value           interface{}   // Value of item
+	frequencyParent *list.Element // Pointer to parent in frequency list
+}
+```
+
+第二个数据结构，这是数据出现频次和当前频次下有多少元素，比如A/B属于出现一次的。
+```go
+type FrequencyItem struct {
+	entries map[*CacheItem]byte // Set of entries
+	freq    int                 // Access frequency
+}
+```
+
+第三个数据结构，cache对象，保存了lfu的数据，通过bykey这个map可以直接找到缓存的数据，freqs是lfu缓存的频次分布，capacity容量，size当前使用的 情况。
+```go
+type Cache struct {
+	bykey    map[string]*CacheItem // Hashmap containing for O(1) access
+	freqs    *list.List            // Linked list of frequencies
+	capacity int                   // Max number of items
+	size     int                   // Current size of cache
+}
+```
+
+
+##### 初始化/获取/设置
+
+首先需要构建cache
+
+```go
+func New() *Cache {
+	cache := new(Cache)
+	cache.bykey = make(map[string]*CacheItem)
+	cache.freqs = list.New()
+	cache.size = 0
+	cache.capacity = 100
+
+	return cache
+}
+```
+
+这个函数将构建一个新的Cache, 初始化了使用了默认的参数，并且直接使用的
+list包，其提供了完整的double list功能。
+
+
+第二个函数，实现Cache的Set方法
+```go
+func (cache *Cache) Set(key string, value interface{}) {
+	if item, ok := cache.bykey[key]; ok {
+		item.value = value
+		cache.Increment(item)
+	} else {
+		item := new(CacheItem)
+		item.key = key
+		item.value = value
+		cache.bykey[key] = item
+		cache.size++
+		if cache.atCapacity() {
+			cache.Evict(e.capacity - 10)
+		}
+		cache.Increment(item)
+	}
+}
+```
+
+get, 通过key获取缓存元素，这里会有次数的变化，所以需要调用Increment，维护cache的变化。
+```go
+func (cache *Cache) Get(key string) interface{} {
+	if item, ok := cache.bykey[key]; ok {
+		cache.Increment(item)
+		return item.value
+	}
+
+	return nil
+}
+```
+
+increment，维护了缓存元素的频次，确保cache正常。
+```go
+func (cache *Cache) Increment(item *CacheItem) {
+	currentFrequency := item.frequencyParent
+	var nextFrequencyAmount int
+	var nextFrequency *list.Element
+
+	if currentFrequency == nil {
+		nextFrequencyAmount = 1
+		nextFrequency = cache.freqs.Front()
+	} else {
+		nextFrequencyAmount = currentFrequency.Value.(*FrequencyItem).freq + 1
+		nextFrequency = currentFrequency.Next()
+	}
+
+	if nextFrequency == nil || nextFrequency.Value.(*FrequencyItem).freq != nextFrequencyAmount {
+		newFrequencyItem := new(FrequencyItem)
+		newFrequencyItem.freq = nextFrequencyAmount
+		newFrequencyItem.entries = make(map[*CacheItem]byte)
+		if currentFrequency == nil {
+			nextFrequency = cache.freqs.PushFront(newFrequencyItem)
+		} else {
+			nextFrequency = cache.freqs.InsertAfter(newFrequencyItem, currentFrequency)
+		}
+	}
+
+	item.frequencyParent = nextFrequency
+	nextFrequency.Value.(*FrequencyItem).entries[item] = 1
+	if currentFrequency != nil {
+		cache.Remove(currentFrequency, item)
+	}
+}
+
+```
+假设keyA/valueA第一次进入lfu的情况分析
+* 通过`Set`函数写入k/v， 缓存数量+1， 缓存freqitem, 通过`Increment`构造出来
+```
+缓存数据keyA/valueA
+CacheItemkeyA {
+    keyA
+    valueA
+    FrequencyItemkeyA
+}
+
+缓存数据对应的freq，出现了一次
+FrequencyItemkeyA {
+	CacheItemkeyA
+	1
+}
+
+cache.freqs的头部就是FrequencyItemkeyA
+```
+
+假设keyA/valueA第二次进入lfu的情况分析
+
+```
+通过bykey，可以找到CacheItemkeyA
+
+更新缓存数据对应的freq，freq+1
+FrequencyItemkeyA {
+	CacheItemkeyA
+	2
+}
+
+cache.freqs的头部依然是FrequencyItemkeyA
+```
+
+删除和更新的操作基本雷同，可以参照流程图和代码来验证。如果还想更加深入的理解可以尝试与我联系。
 
 ####  LRU
 
@@ -46,5 +207,8 @@ lru缓存，在当今依然非常热门的面试问题，笔者曾经面试【�
 
 
 
-
-
+* https://ieftimov.com/post/when-why-least-frequently-used-cache-implementation-golang/
+* https://www.geeksforgeeks.org/doubly-linked-list/
+* https://geektutu.com/post/geecache-day1.html
+* https://geektutu.com/post/geecache-day1.html
+  
