@@ -158,8 +158,8 @@ func (cache *Cache) Increment(item *CacheItem) {
 }
 
 ```
-假设keyA/valueA第一次进入lfu的情况分析
-* 通过`Set`函数写入k/v， 缓存数量+1， 缓存freqitem, 通过`Increment`构造出来
+* keyA/valueA第一次进入lfu的情况分析
+通过`Set`函数写入k/v， 缓存数量+1， 缓存freqitem, 通过`Increment`构造出来
 ```
 缓存数据keyA/valueA
 CacheItemkeyA {
@@ -177,7 +177,7 @@ FrequencyItemkeyA {
 cache.freqs的头部就是FrequencyItemkeyA
 ```
 
-假设keyA/valueA第二次进入lfu的情况分析
+* keyA/valueA第二次进入lfu的情况分析
 
 ```
 通过bykey，可以找到CacheItemkeyA
@@ -193,22 +193,19 @@ cache.freqs的头部依然是FrequencyItemkeyA
 
 删除和更新的操作基本雷同，可以参照流程图和代码来验证。如果还想更加深入的理解可以尝试与我联系。
 
+当然这里没有考虑并发的问题，读者可以使用sync.Mutex实现。
+
 ####  LRU
+设计思路是，使用 HashMap 存储 key，这样可以做到 save 和 get key的时间都是 O(1)，而 HashMap 的 Value 指向双向链表实现的 LRU 的 Node 节点，如图所示。
 
-#### LRU-K
+![image](/img/lru.jpg)
 
-
-## 经典使用场景列举
+* 最后进来的元素放在dll的头部
+* 如果超过了dll的size则删除尾部的元素，对应图中就是0。
 
 
 ## 总结
 
-
-
-
-
 * https://ieftimov.com/post/when-why-least-frequently-used-cache-implementation-golang/
 * https://www.geeksforgeeks.org/doubly-linked-list/
 * https://geektutu.com/post/geecache-day1.html
-* https://geektutu.com/post/geecache-day1.html
-  
