@@ -203,6 +203,85 @@ cache.freqs的头部依然是FrequencyItemkeyA
 * 最后进来的元素放在dll的头部
 * 如果超过了dll的size则删除尾部的元素，对应图中就是0。
 
+##### cacheItem
+```go
+type cacheItem struct{
+	 key string
+	 value string
+}
+```
+* 定义dll中的ele
+  
+
+##### cache
+```go
+type Cache struct  {
+	byKey map[string]*list.Element
+	ll *list.List
+	cap int
+	size int
+}
+```
+
+* byKey只需要O(1)的查找
+* ll维护缓存的前后关系
+* cap容量
+* size当前使用的大小
+
+###### new， set/get
+```go
+func (cache *Cache) New() *Cache{
+	return &Cache{
+		byKey: make(map[string]*list.Element),
+		ll:  list.New(),
+		cap: 100,
+		size: 0,
+	}
+}
+```
+* 初始化
+
+```go
+func (cache * Cache) Get(key string) (value string) {
+	if item, ok:=cache.byKey[key]; ok {
+		cache.ll.MoveToFront(item)
+		return item.Value.(*cacheItem).value
+	}
+	return
+}
+```
+* 寻找缓存数据，如果有则将其移动到ll的前面
+* 返回value
+* 找不到就返回空字符串
+
+```go
+func (cache * Cache) Set(key string, value string){
+	if item, ok := cache.byKey[key]; ok {
+		cache.ll.MoveToFront(item)
+		e := item.Value.(*cacheItem)
+		e.value =  value
+		return
+	}else{
+		newCacheItem :=new(cacheItem)
+		newCacheItem.key = key
+		newCacheItem.key = value
+		cache.size++
+		if cache.size > cache.cap{
+			cache.remove()
+		}
+		ele := cache.ll.PushFront(newCacheItem)
+		cache.byKey[key] = ele
+		return
+	}
+	return
+}
+```
+* 对已经存在的数据做更新，并且将其移动到ll的前面
+* 新增元素，size加一，如果超过了cache的cap则删除ll尾部的
+* 新增元素新加到ll的头部
+
+
+这里，没有考虑并发的情况，感兴趣的可以自己添加锁，并且可以实现更多的方法，比如驱逐等。另外cache cap的控制是计算的value的和，而不是其所占内存【bytes】的大小，这一点也是不够完美的，读者可以试着自己实现 ，或者跟我联系。
 
 ## 总结
 
