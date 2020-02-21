@@ -1,5 +1,5 @@
 ---
-title: "[GO]用go语言实现lru缓存"
+title: "[GO]golang如何实现lru缓存"
 date: 2020-02-19T14:07:36+08:00
 draft: true
 ---
