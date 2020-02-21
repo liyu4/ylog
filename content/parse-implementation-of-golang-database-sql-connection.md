@@ -1,5 +1,5 @@
 ---
-title: "golang数据库连接池的实现[SQLServer]"
+title: "[GO]golang数据库连接池的实现"
 date: 2020-02-17T17:11:44+08:00
 draft: true
 ---
