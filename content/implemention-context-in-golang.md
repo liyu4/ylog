@@ -221,3 +221,5 @@ func WithTimeout(parent Context, timeout time.Duration) (Context, CancelFunc) {
 这是对ctx的一个基本实现，当前go版本的实现比这个稍微多一点，但是代码量依然很少
 
 golang context是非常优秀的实现，从中可以获益良多。
+
+https://www.flysnow.org/2017/05/12/go-in-action-go-context.html
