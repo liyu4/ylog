@@ -7,7 +7,9 @@ draft: true
 我们都知道使用ctx可以控制goroutine，比如取消goroutine树，或者给ctx设置超时，以便整个ctx可以控制在预期的时间内执行，超时则不再继续执行，另外context也内置了deadline属性，开发者可以方便的控制自己的goroutine情况 。
 <!--more-->
 
-golang在database/sql中实现的连接池，大量的使用ctx特性，举一个常见的例子：又一个需求，如果一个transaction执行的时间超过了5s则返回超时，并且回滚transaction，这样做的理由有两个实际的意义。
+
+# 事务和ctx
+golang在database/sql中实现的连接池，大量的使用ctx特性，举一个常见的例子：有一个需求，如果一个transaction执行的时间超过了5s则返回超时错误，并且回滚transaction，这样做的理由有两个实际的意义。
 * 前台用户不需要等待更久的时间
 * 一个执行不会一直占住一个连接（connection）
 
@@ -149,7 +151,7 @@ func (tx *Tx) grabConn(ctx context.Context) (*driverConn, releaseConn, error) {
 * 如果是设置了ctx那么返回ctx的err
 * 如果是没有设置ctx那么返回database/sql的自定义错误
 
-
+# 事务/exce/query都带上ctx
 让我们来看下，如果执行ExecContext的话，就会返回ctx的错误，比如在case中的我们设置的是ctx.WithTimeout(parent, duration), 翻看context.go可以看到内置的错误是`context deadline exceeded` 。
 
 
@@ -200,24 +202,23 @@ func main() {
 	time.Sleep(2 * time.Second)
 }
 ```
-
-针对开始的代码只是替换了`Exec()-->ExecContext()`。 但是这里会输出的错误`context deadline exceeded`， 对照源码来讲，就是直接执行了，对比来说就是少执行了几行代码，然后输出的错误也有些不同。
+针对开始的代码只是替换了`Exec()-->ExecContext()`。后者的第一个参数时候ctx，在上面我们设置的ctx为`WithTimeout()` 超时之后输出的错误`context deadline exceeded`， 对照源码来讲，就是直接执行了`select{}`，对比来说就是少执行了几行代码，然后输出的错误也有些不同。
 ```go
 	select {
     default:
-    // 如果ctx不是background那么
-    // ctx，cancel之后再这里返回错误
-    // 也就是说不会去创建新的或者占用连接
 	case <-ctx.Done():
 		return nil, nil, ctx.Err()
 	}
 ```
-
+* <-ctx.Done()执行，输出ctx.Err()
+* ctx.Err() = `context deadline exceeded`
+* 如果是Exec方法则输出`sql: transaction has already been committed or rolled back`
 
 
 
 # 总结
 * 如果是tx，建议带上ctx，这样可以控制执行的时间
-* 真正执行的函数，建议按照xxxTx()的方式执行
+* 真正执行的函数，建议按照xxxContext()的方式执行,这样父节点ctx取消之后，所有子节点的ctx都能感应到。
 * 就算不是事务执行，如果对于时间有限制的话，也建议带上ctx
-  
+* ctx通过WithTimeout/WithDeadline等copy之后，内部会检查父ctx是否有效，如果无效，则取消所有的子节点，并且close ctx.done， 设置ctx.err
+* 业务代码，如database/sql则需要自己监控ctx.Done()的状态，来决定是否需要继续往下执行
