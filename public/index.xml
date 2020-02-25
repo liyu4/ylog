@@ -6,10 +6,19 @@
     <description>Recent content on aliasliyu4</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 21 Feb 2020 15:32:54 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 24 Feb 2020 14:56:50 +0800</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>[GO]Context在golang数据库连接池中的实践</title>
+      <link>/how-to-use-golang-context-in-action/</link>
+      <pubDate>Mon, 24 Feb 2020 14:56:50 +0800</pubDate>
+      
+      <guid>/how-to-use-golang-context-in-action/</guid>
+      <description>&lt;p&gt;我们都知道使用ctx可以控制goroutine，比如取消goroutine树，或者给ctx设置超时，以便整个ctx可以控制在预期的时间内执行，超时则不再继续执行，另外context也内置了deadline属性，开发者可以方便的控制自己的goroutine情况 。&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>[GO]Context的golang实现</title>

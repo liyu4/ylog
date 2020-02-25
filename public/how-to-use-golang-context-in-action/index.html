@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.63.2" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="baidu-site-verification" content="75p3MP7oWe" />
+  <script data-ad-client="ca-pub-8179589660494169" async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+  <title>[GO]Context在golang数据库连接池中的实践 &middot; aliasliyu4</title>
+  <meta name="description" content="" />
+
+  
+  <link type="text/css" rel="stylesheet" href="/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class="theme-base-08 ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="/"><h1>aliasliyu4</h1></a>
+      <p class="lead">
+       不再是少年 
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="/">Home</a> </li>
+        
+      </ul>
+    </nav>
+
+    <p>&copy; 2020. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>[GO]Context在golang数据库连接池中的实践</h1>
+  <time datetime=2020-02-24T14:56:50&#43;0800 class="post-date">Mon, Feb 24, 2020</time>
+  <p>我们都知道使用ctx可以控制goroutine，比如取消goroutine树，或者给ctx设置超时，以便整个ctx可以控制在预期的时间内执行，超时则不再继续执行，另外context也内置了deadline属性，开发者可以方便的控制自己的goroutine情况 。</p>
+<h1 id="事务和ctx">事务和ctx</h1>
+<p>golang在database/sql中实现的连接池，大量的使用ctx特性，举一个常见的例子：有一个需求，如果一个transaction执行的时间超过了5s则返回超时错误，并且回滚transaction，这样做的理由有两个实际的意义。</p>
+<ul>
+<li>前台用户不需要等待更久的时间</li>
+<li>一个执行不会一直占住一个连接（connection）</li>
+</ul>
+<p>假设我们现在开启一个transaction对db中的表做一些操作</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+
+<span style="color:#f92672">import</span> (
+	<span style="color:#e6db74">&#34;context&#34;</span>
+	<span style="color:#e6db74">&#34;database/sql&#34;</span>
+	<span style="color:#e6db74">&#34;fmt&#34;</span>
+	<span style="color:#e6db74">&#34;time&#34;</span>
+
+	<span style="color:#a6e22e">_</span> <span style="color:#e6db74">&#34;github.com/go-sql-driver/mysql&#34;</span>
+)
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
+	<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Print</span>(<span style="color:#e6db74">&#34;start\n&#34;</span>)
+	<span style="color:#75715e">// connect to mysql
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">db</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">sql</span>.<span style="color:#a6e22e">Open</span>(<span style="color:#e6db74">&#34;mysql&#34;</span>, <span style="color:#e6db74">&#34;root:@tcp(127.0.0.1:3306)/test&#34;</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		panic(<span style="color:#a6e22e">err</span>)
+    }
+	<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">_</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">WithTimeout</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Background</span>(), <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span><span style="color:#f92672">*</span><span style="color:#ae81ff">5</span>)
+	<span style="color:#75715e">//start transaction with context
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">tx</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">BeginTx</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#66d9ef">nil</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;start transaction failed: [%v]&#34;</span>, <span style="color:#a6e22e">err</span>)
+	}
+	<span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">Rollback</span>()
+	<span style="color:#a6e22e">insertStatement1</span> <span style="color:#f92672">:=</span> <span style="color:#e6db74">`</span><span style="color:#e6db74">insert into foo(id, name, age) values(?,?,?)</span><span style="color:#e6db74">`</span>
+	<span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">Exec</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">insertStatement1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#e6db74">&#34;foo&#34;</span>, <span style="color:#ae81ff">20</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;exec insert statement 1 failed: [%v]&#34;</span>, <span style="color:#a6e22e">err</span>)
+		<span style="color:#66d9ef">return</span>
+	}
+	<span style="color:#75715e">// ctx will time out
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">5</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
+	<span style="color:#a6e22e">insertStatement2</span> <span style="color:#f92672">:=</span> <span style="color:#e6db74">`</span><span style="color:#e6db74">insert into bar(id, foo_id) values(?,?)</span><span style="color:#e6db74">`</span>
+	<span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">Exec</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">insertStatement2</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#75715e">// output: sql: transaction has already been committed or rolled back
+</span><span style="color:#75715e"></span>		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;exec insert statement 2 failed: [%v]&#34;</span>, <span style="color:#a6e22e">err</span>)
+		<span style="color:#66d9ef">return</span>
+	}
+	<span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">Commit</span>()
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;tx commit failed: [%v]&#34;</span>, <span style="color:#a6e22e">err</span>)
+	}
+	<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
+	<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Print</span>(<span style="color:#e6db74">&#34;end\n&#34;</span>)
+}
+
+</code></pre></div><ul>
+<li>1 连接mysql，默认的database为db</li>
+<li>2 新增一个ctx，从Background开始，带有5s的超时，五秒之后ctx.Done会关闭，ctx.err = <code>context deadline exceeded</code></li>
+<li>3 <code>BeginTx(ctx, nil)</code>, 这样tx就带有了ctx</li>
+<li>4 无论如何都执行rollback，确保资源释放</li>
+<li>5 执行一条sql语句</li>
+<li>6 强制sleep五秒</li>
+<li>7 再次执行一条sql，这个时候会报错，因为ctx超时了。</li>
+<li>8 错误信息 <code>sql: transaction has already been committed or rolled back</code></li>
+</ul>
+<p>那么问题就是，为什么会发生这样的错误，这样的错误符合我们的预期，但是并不是ctx的错误，这个我们后面再讲为什么会这样。</p>
+<p>首先<code>BeginTx(...)</code>注入了ctx，注入的ctx做了如下的工作。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// 继承begintx传递进来的ctx
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">cancel</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">WithCancel</span>(<span style="color:#a6e22e">ctx</span>)
+<span style="color:#a6e22e">tx</span> = <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">Tx</span>{
+	<span style="color:#a6e22e">db</span>:          <span style="color:#a6e22e">db</span>,
+	<span style="color:#a6e22e">dc</span>:          <span style="color:#a6e22e">dc</span>,
+	<span style="color:#a6e22e">releaseConn</span>: <span style="color:#a6e22e">release</span>,
+	<span style="color:#a6e22e">txi</span>:         <span style="color:#a6e22e">txi</span>,
+	<span style="color:#a6e22e">cancel</span>:      <span style="color:#a6e22e">cancel</span>,
+    <span style="color:#a6e22e">ctx</span>:         <span style="color:#a6e22e">ctx</span>,
+}
+
+<span style="color:#75715e">// 开启携程block住
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">go</span> <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">awaitDone</span>()
+
+<span style="color:#75715e">// 当ctx close done之后
+</span><span style="color:#75715e"></span><span style="color:#75715e">// 执行rollback
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">tx</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Tx</span>) <span style="color:#a6e22e">awaitDone</span>() {
+	<span style="color:#f92672">&lt;-</span><span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">Done</span>()
+	<span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">rollback</span>(<span style="color:#66d9ef">true</span>)
+}
+
+<span style="color:#75715e">// 执行rollback， 设置tx.Done为1
+</span><span style="color:#75715e"></span><span style="color:#75715e">// 也就是意味着，这个tx被“销毁”了
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">tx</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Tx</span>) <span style="color:#a6e22e">rollback</span>(<span style="color:#a6e22e">discardConn</span> <span style="color:#66d9ef">bool</span>) <span style="color:#66d9ef">error</span> {
+	<span style="color:#66d9ef">if</span> !<span style="color:#a6e22e">atomic</span>.<span style="color:#a6e22e">CompareAndSwapInt32</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">done</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>) {
+		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">ErrTxDone</span>
+    }
+    <span style="color:#75715e">// ......
+</span><span style="color:#75715e"></span>}
+</code></pre></div><ul>
+<li><code>BeginTx</code>开启了了带有ctx的tx，然后监控ctx是否done</li>
+<li>如果<code>ctx.Done</code>, 那么则回滚tx，释放资源，设置<code>tx.Done = 1</code></li>
+</ul>
+<p>那么获得了<code>tx.Done = 1</code>有什么意义呢？ 之前我们出错的地方是exec的地方。让我们看下这段代码发生了什么。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">tx</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Tx</span>) <span style="color:#a6e22e">grabConn</span>(<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">driverConn</span>, <span style="color:#a6e22e">releaseConn</span>, <span style="color:#66d9ef">error</span>) {
+	<span style="color:#66d9ef">select</span> {
+    <span style="color:#66d9ef">default</span>:
+    <span style="color:#75715e">// 如果ctx不是background那么
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// ctx，cancel之后再这里返回错误
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 也就是说不会去创建新的或者占用连接
+</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">case</span> <span style="color:#f92672">&lt;-</span><span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">Done</span>():
+		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">Err</span>()
+	}
+    <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">closemu</span>.<span style="color:#a6e22e">RLock</span>()
+    <span style="color:#75715e">// 如果ctx是emptyctx的话
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 那么由于tx.Done设置为1
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 然后返回ErrTxDone
+</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">isDone</span>() {
+		<span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">closemu</span>.<span style="color:#a6e22e">RUnlock</span>()
+		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">ErrTxDone</span>
+	}
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">hookTxGrabConn</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> { 
+		<span style="color:#a6e22e">hookTxGrabConn</span>()
+	}
+	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">dc</span>, <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">closemuRUnlockRelease</span>, <span style="color:#66d9ef">nil</span>
+}
+</code></pre></div><ul>
+<li>首先尝grab一个connection</li>
+<li>然后检查ctx的状态</li>
+<li>分为设置了ctx和默认的ctx</li>
+<li>如果是设置了ctx那么返回ctx的err</li>
+<li>如果是没有设置ctx那么返回database/sql的自定义错误</li>
+</ul>
+<h1 id="事务excequery都带上ctx">事务/exce/query都带上ctx</h1>
+<p>让我们来看下，如果执行ExecContext的话，就会返回ctx的错误，比如在case中的我们设置的是ctx.WithTimeout(parent, duration), 翻看context.go可以看到内置的错误是<code>context deadline exceeded</code> 。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+
+<span style="color:#f92672">import</span> (
+	<span style="color:#e6db74">&#34;context&#34;</span>
+	<span style="color:#e6db74">&#34;database/sql&#34;</span>
+	<span style="color:#e6db74">&#34;fmt&#34;</span>
+	<span style="color:#e6db74">&#34;time&#34;</span>
+
+	<span style="color:#a6e22e">_</span> <span style="color:#e6db74">&#34;github.com/go-sql-driver/mysql&#34;</span>
+)
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
+	<span style="color:#75715e">// connect to mysql
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">db</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">sql</span>.<span style="color:#a6e22e">Open</span>(<span style="color:#e6db74">&#34;mysql&#34;</span>, <span style="color:#e6db74">&#34;root:@tcp(127.0.0.1:3306)/test&#34;</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		panic(<span style="color:#a6e22e">err</span>)
+	}
+	<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">_</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">WithTimeout</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Background</span>(), <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span><span style="color:#f92672">*</span><span style="color:#ae81ff">5</span>)
+	<span style="color:#75715e">//start transaction with context
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">tx</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">BeginTx</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#66d9ef">nil</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;start transaction failed: [%v]&#34;</span>, <span style="color:#a6e22e">err</span>)
+	}
+	<span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">Rollback</span>()
+	<span style="color:#a6e22e">insertStatement1</span> <span style="color:#f92672">:=</span> <span style="color:#e6db74">`</span><span style="color:#e6db74">insert into foo(id, name, age) values(?,?,?)</span><span style="color:#e6db74">`</span>
+	<span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">ExecContext</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">insertStatement1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#e6db74">&#34;foo&#34;</span>, <span style="color:#ae81ff">20</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;exec insert statement 1 failed: [%v]&#34;</span>, <span style="color:#a6e22e">err</span>)
+		<span style="color:#66d9ef">return</span>
+	}
+	<span style="color:#75715e">// ctx will time out
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">5</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
+	<span style="color:#a6e22e">insertStatement2</span> <span style="color:#f92672">:=</span> <span style="color:#e6db74">`</span><span style="color:#e6db74">insert into bar(id, foo_id) values(?,?)</span><span style="color:#e6db74">`</span>
+	<span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">ExecContext</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">insertStatement2</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#75715e">// output: context deadline exceeded
+</span><span style="color:#75715e"></span>		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;exec insert statement 2 failed: [%v]&#34;</span>, <span style="color:#a6e22e">err</span>)
+		<span style="color:#66d9ef">return</span>
+	}
+	<span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">Commit</span>()
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;tx commit failed: [%v]&#34;</span>, <span style="color:#a6e22e">err</span>)
+	}
+	<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
+}
+</code></pre></div><p>针对开始的代码只是替换了<code>Exec()--&gt;ExecContext()</code>。后者的第一个参数时候ctx，在上面我们设置的ctx为<code>WithTimeout()</code> 超时之后输出的错误<code>context deadline exceeded</code>， 对照源码来讲，就是直接执行了<code>select{}</code>，对比来说就是少执行了几行代码，然后输出的错误也有些不同。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">	<span style="color:#66d9ef">select</span> {
+    <span style="color:#66d9ef">default</span>:
+	<span style="color:#66d9ef">case</span> <span style="color:#f92672">&lt;-</span><span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">Done</span>():
+		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">Err</span>()
+	}
+</code></pre></div><ul>
+<li>&lt;-ctx.Done()执行，输出ctx.Err()</li>
+<li>ctx.Err() = <code>context deadline exceeded</code></li>
+<li>如果是Exec方法则输出<code>sql: transaction has already been committed or rolled back</code></li>
+</ul>
+<h1 id="总结">总结</h1>
+<ul>
+<li>如果是tx，建议带上ctx，这样可以控制执行的时间</li>
+<li>真正执行的函数，建议按照xxxContext()的方式执行,这样父节点ctx取消之后，所有子节点的ctx都能感应到。</li>
+<li>就算不是事务执行，如果对于时间有限制的话，也建议带上ctx</li>
+<li>ctx通过WithTimeout/WithDeadline等copy之后，内部会检查父ctx是否有效，如果无效，则取消所有的子节点，并且close ctx.done， 设置ctx.err</li>
+<li>业务代码，如database/sql则需要自己监控ctx.Done()的状态，来决定是否需要继续往下执行</li>
+</ul>
+</div>
+
+
+    </main>
+
+    
+  </body>
+</html>
