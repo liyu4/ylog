@@ -222,3 +222,8 @@ func main() {
 * 就算不是事务执行，如果对于时间有限制的话，也建议带上ctx
 * ctx通过WithTimeout/WithDeadline等copy之后，内部会检查父ctx是否有效，如果无效，则取消所有的子节点，并且close ctx.done， 设置ctx.err
 * 业务代码，如database/sql则需要自己监控ctx.Done()的状态，来决定是否需要继续往下执行
+
+
+# Link
+* https://gist.github.com/liyu4/e199578085cdff5d29fcb36b04e08b2b
+* https://gist.github.com/liyu4/83a5a8aa671db9df46f356a1239fcfb1
