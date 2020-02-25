@@ -13,19 +13,19 @@
     
     <item>
       <title>[GO]web中间件(2)</title>
-      <link>/how-to-implementation-middleware-using-golang.2/</link>
+      <link>/how-to-implementation-middleware-using-golang-part2/</link>
       <pubDate>Tue, 25 Feb 2020 11:48:49 +0800</pubDate>
       
-      <guid>/how-to-implementation-middleware-using-golang.2/</guid>
+      <guid>/how-to-implementation-middleware-using-golang-part2/</guid>
       <description>&lt;p&gt;书接上文&lt;/p&gt;</description>
     </item>
     
     <item>
       <title>[GO]web中间件(1)</title>
-      <link>/how-to-implementation-middleware-using-golang.1/</link>
+      <link>/how-to-implementation-middleware-using-golang-part1/</link>
       <pubDate>Tue, 25 Feb 2020 11:46:08 +0800</pubDate>
       
-      <guid>/how-to-implementation-middleware-using-golang.1/</guid>
+      <guid>/how-to-implementation-middleware-using-golang-part1/</guid>
       <description>&lt;p&gt;web中间件常见的用途是一些公共方法的执行，譬如，获取用户的信息，压缩等。
 在讲这些之前我们先实现一个go的web server。我们知道在go里面实现一个web服务器是相对容易的事情。&lt;/p&gt;</description>
     </item>
