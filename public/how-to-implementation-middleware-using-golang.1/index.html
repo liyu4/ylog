@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.63.2" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="baidu-site-verification" content="75p3MP7oWe" />
+  <script data-ad-client="ca-pub-8179589660494169" async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+  <title>[GO]web中间件(1) &middot; aliasliyu4</title>
+  <meta name="description" content="" />
+
+  
+  <link type="text/css" rel="stylesheet" href="/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class="theme-base-08 ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="/"><h1>aliasliyu4</h1></a>
+      <p class="lead">
+       不再是少年 
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="/">Home</a> </li>
+        
+      </ul>
+    </nav>
+
+    <p>&copy; 2020. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>[GO]web中间件(1)</h1>
+  <time datetime=2020-02-25T11:46:08&#43;0800 class="post-date">Tue, Feb 25, 2020</time>
+  <p>web中间件常见的用途是一些公共方法的执行，譬如，获取用户的信息，压缩等。
+在讲这些之前我们先实现一个go的web server。我们知道在go里面实现一个web服务器是相对容易的事情。</p>
+<p>下面是一个例子：</p>
+<pre><code>package main
+
+import (
+	&quot;net/http&quot;
+)
+
+func love(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(&quot;i love golang&quot;))
+}
+
+func main() {
+	mux := http.NewServeMux()
+	mux.HandleFunc(&quot;/love&quot;, love)
+	http.ListenAndServe(&quot;:1314&quot;, mux)
+}
+
+
+</code></pre><p>在你的终端输入 curl http://:1314/love你会得到下面的输出， 或者在你的浏览器窗口输入http://127.0.0.1/love, 会输出 &ldquo;i love golang&rdquo;
+<a href="https://imgchr.com/i/iCbIuF"><img src="https://s1.ax1x.com/2018/09/07/iCbIuF.png" alt="iCbIuF.png"></a></p>
+<h3 id="handler">Handler</h3>
+<p>Hanlder在net/http标准包中的定义，可以看到它时一个接口类型，里面包含了一个ServerHTTP的方法，任何实现该方法的类型，都可以被当作时Handler</p>
+<pre><code>type Handler interface {
+	ServeHTTP(ResponseWriter, *Request)
+}
+
+// Handle registers the handler for the given pattern.
+// If a handler already exists for pattern, Handle panics.
+func (mux *ServeMux) Handle(pattern string, handler Handler) { // handler直接可以注册到mux里面
+	mux.mu.Lock()
+	defer mux.mu.Unlock()
+
+	if pattern == &quot;&quot; {
+		panic(&quot;http: invalid pattern&quot;)
+	}
+	if handler == nil {
+		panic(&quot;http: nil handler&quot;)
+	}
+	if _, exist := mux.m[pattern]; exist {
+		panic(&quot;http: multiple registrations for &quot; + pattern)
+	}
+
+	if mux.m == nil {
+		mux.m = make(map[string]muxEntry)
+	}
+	mux.m[pattern] = muxEntry{h: handler, pattern: pattern}
+
+	if pattern[0] != '/' {
+		mux.hosts = true
+	}
+}
+
+</code></pre><p>mux也叫做router，它的作用是，注册request path和它对应的handler，handler负责处理具体的逻辑，比如获取一个用户的个人信息，或者退出一个系统等。</p>
+<p>基于此我们可以写出另外一种形式的mini http server,  下面是一个用自己实现的Handler类型，然后注册到mux，并且监听外部输入的例子:</p>
+<pre><code>package main
+
+import (
+	&quot;net/http&quot;
+)
+
+type love struct {
+	lang string
+}
+
+func (l *love) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(&quot;i love &quot; + l.lang))
+}
+
+func main() {
+	mux := http.NewServeMux()
+	l := &amp;love{lang: &quot;golang&quot;}
+	mux.Handle(&quot;/handler&quot;, l) // l是Hander类型
+	http.ListenAndServe(&quot;:1314&quot;, mux)
+}
+
+</code></pre><p>在终端中输入curl http://:1314/handler, 输出如下。</p>
+<p><img src="https://ws1.sinaimg.cn/large/9b6074eegy1fv14y0kocrj20gh01sjre.jpg" alt=""></p>
+<h3 id="函数即类型-handlerfunc">函数即类型 HandlerFunc</h3>
+<p>golang中函数也可以作为一种类型，HandlerFunc就是绝佳的实践，它实现了ServeHTTP方法，也就是说它属于上面我们说的Handler类型，那么也就是说假如我们有一个函数类似于：f(w, r)， 就可以利用类型之间的转换将其升级为(HandlerFunc(f)) HandlerFunc类型，然后其自动继承了ServeHTTP方法。</p>
+<pre><code>type HandlerFunc func(ResponseWriter, *Request)
+
+// ServeHTTP calls f(w, r).
+func (f HandlerFunc) ServeHTTP(w ResponseWriter, r *Request) {
+	f(w, r)
+}
+
+</code></pre><p>写下这个有趣的例子吧。</p>
+<pre><code>package main
+
+import (
+	&quot;net/http&quot;
+)
+
+func love(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(&quot;i love golang&quot;))
+}
+
+
+func main() {
+	mux := http.NewServeMux()
+	l := http.HandlerFunc(love) // 类型变成HandlerFunc, 也可以认为是Handler类型
+	http.Handle(&quot;/handlerfunc&quot;,l) // 所以我们这样注册
+	http.ListenAndServe(&quot;:1314&quot;, mux)
+}
+
+其实main还这样写
+
+func main() {
+	mux := http.NewServeMux()
+	http.HandlerFunc(&quot;/handlerfunc&quot;, love)  // net/http提供了HandlerFunc的直接注册
+	http.ListenAndServe(&quot;:1314&quot;, mux)
+}
+
+</code></pre><p>为什么可以这样写呢？下面的代码可以解释, 其实它的内部实现了一个mux.Handle, 并且将我们实现的handler函数转换成Handler，然后完成注册工作。</p>
+<pre><code>// HandleFunc registers the handler function for the given pattern.
+func (mux *ServeMux) HandleFunc(pattern string, handler func(ResponseWriter, *Request)) {
+	mux.Handle(pattern, HandlerFunc(handler))
+}
+
+</code></pre><h3 id="defaultservemux">DefaultServeMux</h3>
+<p>mux := http.NewServeMux()我们拿到了一个默认的mux, 它的结构如下，其中mu是一把读写互斥锁， m存储了请求路径对应的Handler。相信这个结构是很清晰明的。</p>
+<pre><code>type ServeMux struct {
+	mu    sync.RWMutex
+	m     map[string]muxEntry
+	hosts bool // whether any patterns contain hostnames
+}
+
+type muxEntry struct {
+	h       Handler
+	pattern string
+}
+
+</code></pre><p>###扯了这么久，要说到middlerware怎么写了</p>
+<p>假如我们需要在每一个请求的前面都输出一句&quot;我喜欢和朱颖在一起&rdquo;，我们该怎么做？</p>
+<p>让我们来试一试吧。</p>
+<pre><code>package main
+
+import (
+	&quot;log&quot;
+	&quot;net/http&quot;
+)
+
+// wantToBeWithYou是一个中间件函数
+func wantToBeWithYou(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf(&quot;zhuying want to be with you&quot;) // 中间业务在这里，可以设置ctx，鉴权等
+		next.ServeHTTP(w, r)  // 这里本质上执行的下面的rain方法
+	})
+}
+
+// 某一个具体的业务Handler
+func rain(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(&quot;漕河泾正下着淅淅沥沥的秋雨&quot;))
+}
+
+func main() {
+	mux := http.NewServeMux()
+	h := http.HandlerFunc(rain)
+	mux.Handle(&quot;/middleware&quot;, wantToBeWithYou(h))
+	http.ListenAndServe(&quot;:1314&quot;, mux)
+}
+
+
+输出如下
+╰─$ go run test.go                                                                 1 ↵
+2018/09/07 16:59:23 zhuying want to be with you
+2018/09/07 16:59:23 漕河泾正下着淅淅沥沥的秋雨
+
+</code></pre><p>如上我们实现了一个简单的中间件功能，我们成功的打印了log信息，并且执行了我们rain方法。一般而言我们会在wantToBeWithYou做一些更具体的事情，比如你可能想在ctx中设置一些value，甚至你想检查session是否合理，这些都可以在middleware中做。</p>
+<p>未完待续！！！！！！</p>
+</div>
+
+
+    </main>
+
+    
+  </body>
+</html>

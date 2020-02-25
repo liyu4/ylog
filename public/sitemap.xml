@@ -3,12 +3,22 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>/how-to-use-golang-context-in-action/</loc>
-    <lastmod>2020-02-24T14:56:50+08:00</lastmod>
+    <loc>/how-to-implementation-middleware-using-golang.2/</loc>
+    <lastmod>2020-02-25T11:48:49+08:00</lastmod>
   </url>
   
   <url>
     <loc>/</loc>
+    <lastmod>2020-02-25T11:48:49+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/how-to-implementation-middleware-using-golang.1/</loc>
+    <lastmod>2020-02-25T11:46:08+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/how-to-use-golang-context-in-action/</loc>
     <lastmod>2020-02-24T14:56:50+08:00</lastmod>
   </url>
   
