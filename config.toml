@@ -1,10 +1,37 @@
 baseURL = "/"
-languageCode = "en-us"
-title = "aliasliyu4"
-theme = "hyde"
+languageCode = "zh-cn"
+title = "热爱.自由"
+theme = "yellow"
 
 [params]
 #博客简介
 description = "不再是少年"
 #博客主题颜色
 themeColor = "theme-base-08"
+
+
+[[menu.main]]
+  name = "About"
+  url = "/about"
+
+[[menu.main]]
+  name = "Blog"
+  url = "/blog"
+
+[[menu.social]]
+    name = "GitHub"
+    url = "https://github.com/liyu4"
+    pre = "<i class='fab fa-github'></i>"
+
+[[menu.social]]
+    name = "Twitter"
+    url = "https://twitter.com/liyu7771"
+    pre = "<i class='fab fa-twitter'></i>"
+
+[[menu.footer]]
+  name = "About"
+  url = "/about"
+
+[[menu.footer]]
+  name = "Privacy"
+  url = "/privacy"
