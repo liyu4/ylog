@@ -7,6 +7,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    background-color: #FCFCFC;
 }
 
 main {
@@ -55,3 +56,4 @@ h6 { text-transform: none;
 code { text-transform: none; 
 }
 
+ 
