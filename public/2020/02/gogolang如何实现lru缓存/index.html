@@ -1,59 +1,112 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
-<head>
-  <link href="https://gmpg.org/xfn/11" rel="profile">
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.65.3" />
+<html lang="zh-cn"><head>
+    
+    <meta charset="utf-8">
+     
+    <meta name="viewpoint" content="with=device-width, initial-scale=1, viewport-fit=cover">
+    <title>[GO]golang如何实现lru缓存 | 自由.自在</title>
+    <meta name="description" content="lru缓存，在当今依然非常热门的面试问题，笔者曾经面试【某蜓，音频领域的top公司】就问到了这个问题，当时回答的并不是好。那我们一起来看看如何从0-1实现一个完美的lru缓存。 ">
+    <meta property="description" content="My site description" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <link rel="canonical" href="/2020/02/gogolang%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0lru%E7%BC%93%E5%AD%98/" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css" />
+    <meta property="og:title" content="[GO]golang如何实现lru缓存" />
+<meta property="og:description" content="lru缓存，在当今依然非常热门的面试问题，笔者曾经面试【某蜓，音频领域的top公司】就问到了这个问题，当时回答的并不是好。那我们一起来看看如何从0-1实现一个完美的lru缓存。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/2020/02/gogolang%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0lru%E7%BC%93%E5%AD%98/" />
+<meta property="og:image" content="/img/author_image.jpg"/>
+<meta property="article:published_time" content="2020-02-19T14:07:36+08:00" />
+<meta property="article:modified_time" content="2020-02-19T14:07:36+08:00" />
 
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script data-ad-client="ca-pub-8179589660494169" async
-    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-  <title>[GO]golang如何实现lru缓存 &middot; aliasliyu4</title>
-  <meta name="description" content="" />
+    <meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="/img/author_image.jpg"/>
 
-  
-  <link type="text/css" rel="stylesheet" href="/css/print.css" media="print">
-  <link type="text/css" rel="stylesheet" href="/css/poole.css">
-  <link type="text/css" rel="stylesheet" href="/css/syntax.css">
-  <link type="text/css" rel="stylesheet" href="/css/hyde.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+<meta name="twitter:title" content="[GO]golang如何实现lru缓存"/>
+<meta name="twitter:description" content="lru缓存，在当今依然非常热门的面试问题，笔者曾经面试【某蜓，音频领域的top公司】就问到了这个问题，当时回答的并不是好。那我们一起来看看如何从0-1实现一个完美的lru缓存。"/>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head><body><header>
+    <nav class="navbar" role="navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="/" title="home"  class="navbar-item">
+                    <span class="logo">
+                       <h1>自由.自在</h1>
+                </a>
+
+                
+                <a  href="https://github.com/liyu4" class="navbar-item is-hidden-desktop" title="GitHub">
+                </span>
+                </a>
+                
+                <a  href="https://twitter.com/liyu7771" class="navbar-item is-hidden-desktop" title="Twitter">
+                </span>
+                </a>
+                
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
 
 
-  
-  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
-  <link rel="shortcut icon" href="/favicon.png">
+            <div class="navbar-menu">
+                <div class="navbar-start">
+                    
+                    <a href="/about" class="navbar-item">About</a>
+                    
+                    <a href="/blog" class="navbar-item">Blog</a>
+                    
+                </div>
 
-  
-  
-</head>
-
-  <body class="theme-base-08 ">
-  <aside class="sidebar">
-  <div class="container sidebar-sticky">
-    <div class="sidebar-about">
-      <a href="/"><h1>aliasliyu4</h1></a>
-      <p class="lead">
-       不再是少年 
-      </p>
-    </div>
-
-    <nav>
-      <ul class="sidebar-nav">
-        <li><a href="/">Home</a> </li>
-        
-      </ul>
+                <div  class="navbar-end">
+                    
+                    <a href="https://github.com/liyu4" class="navbar-item is-hidden-touch" title="GitHub">
+                        <span class="icon"><i class='fab fa-github'></i></span>
+                    </a>
+                    
+                    <a href="https://twitter.com/liyu7771" class="navbar-item is-hidden-touch" title="Twitter">
+                        <span class="icon"><i class='fab fa-twitter'></i></span>
+                    </a>
+                    
+                </div>
+            </div>
+        </div>
     </nav>
 
-    <p>&copy; 2020. All rights reserved. </p>
-  </div>
-</aside>
+    <script>
+        $(document).ready(function () {
+            $(".navbar-burger").click(function () {
+                $(".navbar-burger").toggleClass("is-active");
+                $(".navbar-menu").toggleClass("is-active");
+            })
+        })
+    </script>
 
-    <main class="content container">
-    <div class="post">
-  <h1>[GO]golang如何实现lru缓存</h1>
-  <time datetime=2020-02-19T14:07:36&#43;0800 class="post-date">Wed, Feb 19, 2020</time>
-  <p>lru缓存，在当今依然非常热门的面试问题，笔者曾经面试【某蜓，音频领域的top公司】就问到了这个问题，当时回答的并不是好。那我们一起来看看如何从0-1实现一个完美的lru缓存。</p>
+</header><main>
+<section class="section">
+    <article>
+        <div class="columns is-centered">
+            <div class="column max-800px">
+             <h1 class="title is-1">[GO]golang如何实现lru缓存</h1>
+            <div class="title subtitle heading is-6">
+                <div class="columns is-vcentered is-mobile">
+                    
+                    <div class="column is-narrow">
+                        <img src="/img/author_image.jpg" class="author-image">
+                    </div>
+                    
+                    <div class="column">
+                        <p>杨修</p>
+                        <p><time>February 19, 2020</time> |
+                            3  minutes </p>
+                    </div>
+                </div>
+
+            <div class="content">
+            <p>lru缓存，在当今依然非常热门的面试问题，笔者曾经面试【某蜓，音频领域的top公司】就问到了这个问题，当时回答的并不是好。那我们一起来看看如何从0-1实现一个完美的lru缓存。</p>
 <h2 id="简介">简介</h2>
 <p>缓存，在日常的使用中帮助我们降低接口的响应速度，常常是将一些数据加载到<strong>内存</strong>当中，调用方的请求进来之后服务可以直接从内存中拿到数据，然后直接返回，减少了代码里面的逻辑处理，如果有数据查询，或者网络调用的话，这些步骤都可以省去，这些时间是非常可观的。所以非时间敏感的数据是可以加载到内存中去的，但是主机的资源是有限的，这其中内存资源尤其的紧张，所以缓存策略会<strong>限制使用的内存大小</strong>，当缓存满了之后，新进来的元素就需要踢掉旧有的某个元素，这就涉及到<strong>缓存淘汰</strong>。</p>
 <h2 id="缓存淘汰算法介绍">缓存淘汰算法介绍</h2>
@@ -282,11 +335,48 @@ cache.freqs的头部依然是FrequencyItemkeyA
 <li><a href="https://www.geeksforgeeks.org/doubly-linked-list/">https://www.geeksforgeeks.org/doubly-linked-list/</a></li>
 <li><a href="https://geektutu.com/post/geecache-day1.html">https://geektutu.com/post/geecache-day1.html</a></li>
 </ul>
-</div>
+            </div>
+            </div>
+        </div>
+    </article>
 
 
-    </main>
+    <section class="section">
+        <div class="columns is-centered">
+            <div class="column max-800px">
+                <div class="columns is-mobile">
+                    <div class="column has-text-left">
+                        
+                        <p>Previous post</p>
+                        <a href="/2020/02/gogolang%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E7%9A%84%E5%AE%9E%E7%8E%B0/">[GO]golang数据库连接池的实现</a>
+                        
+                    </div>
+                    <div class="column has-text-right">
+                        
+                        <p>Next post</p>
+                        <a href="/2020/02/go-context%E7%9A%84golang%E5%AE%9E%E7%8E%B0/">[GO] Context的golang实现</a>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    
-  </body>
+</section>
+
+        </main><footer class="footer">
+    <div class="container">
+        <div class="columns has-text-centered">
+            
+            <div class="column is-narrow">
+                <a href="/about" class="">About</a>
+            </div>
+            
+            <div class="column is-narrow">
+                <a href="/privacy" class="">Privacy</a>
+            </div>
+            
+        </div>
+    </div>
+</footer></body>
 </html>

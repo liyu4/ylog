@@ -1,26 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>自由.自在</title>
-    <link>/</link>
-    <description>Recent content on 自由.自在</description>
+    <title>Blogs on 自由.自在</title>
+    <link>/blog/</link>
+    <description>Recent content in Blogs on 自由.自在</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 25 May 2020 11:38:57 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 08 Mar 2020 12:45:29 +0800</lastBuildDate>
     
-	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/blog/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>About</title>
-      <link>/about/</link>
-      <pubDate>Mon, 25 May 2020 11:38:57 +0800</pubDate>
-      
-      <guid>/about/</guid>
-      <description>关于我 杨修
-毕业于井冈山大学
-从事后端开发工作 2016年&amp;ndash;至今</description>
-    </item>
     
     <item>
       <title>300 Days Alone</title>
