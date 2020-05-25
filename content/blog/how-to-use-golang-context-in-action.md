@@ -8,7 +8,7 @@ draft: true
 <!--more-->
 
 
-# 事务和ctx
+# transaction and ctx
 golang在database/sql中实现的连接池，大量的使用ctx特性，举一个常见的例子：有一个需求，如果一个transaction执行的时间超过了5s则返回超时错误，并且回滚transaction，这样做的理由有两个实际的意义。
 * 前台用户不需要等待更久的时间
 * 一个执行不会一直占住一个连接（connection）

@@ -1,6 +1,6 @@
 baseURL = "/"
 languageCode = "zh-cn"
-title = "热爱.自由"
+title = "自由.自在"
 theme = "yellow"
 
 [params]
@@ -8,6 +8,11 @@ theme = "yellow"
 description = "不再是少年"
 #博客主题颜色
 themeColor = "theme-base-08"
+
+author = "杨修"
+authorImage = "/img/author_image.jpg"
+
+images = [ "/img/author_image.jpg" ]
 
 
 [[menu.main]]
@@ -35,3 +40,8 @@ themeColor = "theme-base-08"
 [[menu.footer]]
   name = "Privacy"
   url = "/privacy"
+
+[permalinks]
+  blog = "/:year/:month/:title/"
+
+
