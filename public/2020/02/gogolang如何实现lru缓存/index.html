@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en-us"><head>
+    
+    <meta charset="utf-8">
+     
+    <meta name="viewpoint" content="with=device-width, initial-scale=1, viewport-fit=cover">
+    <title>[GO]golang如何实现lru缓存 | 自由.自在</title>
+    <meta name="description" content="lru缓存，在当今依然非常热门的面试问题，笔者曾经面试【某蜓，音频领域的top公司】就问到了这个问题，当时回答的并不是好。那我们一起来看看如何从0-1实现一个完美的lru缓存。 ">
+    <meta property="description" content="My site description" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <link rel="canonical" href="/2020/02/gogolang%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0lru%E7%BC%93%E5%AD%98/" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css" />
+    <meta property="og:title" content="[GO]golang如何实现lru缓存" />
+<meta property="og:description" content="lru缓存，在当今依然非常热门的面试问题，笔者曾经面试【某蜓，音频领域的top公司】就问到了这个问题，当时回答的并不是好。那我们一起来看看如何从0-1实现一个完美的lru缓存。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/2020/02/gogolang%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0lru%E7%BC%93%E5%AD%98/" />
+<meta property="og:image" content="/img/author_image.jpg"/>
+<meta property="article:published_time" content="2020-02-19T14:07:36+08:00" />
+<meta property="article:modified_time" content="2020-02-19T14:07:36+08:00" />
+
+    <meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="/img/author_image.jpg"/>
+
+<meta name="twitter:title" content="[GO]golang如何实现lru缓存"/>
+<meta name="twitter:description" content="lru缓存，在当今依然非常热门的面试问题，笔者曾经面试【某蜓，音频领域的top公司】就问到了这个问题，当时回答的并不是好。那我们一起来看看如何从0-1实现一个完美的lru缓存。"/>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head><body><header>
+    <nav class="navbar" role="navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="/" title="home"  class="navbar-item">
+                    <span class="logo">
+                       <h1>自由.自在</h1>
+                </a>
+
+                
+                <a  href="https://github.com/liyu4" class="navbar-item is-hidden-desktop" title="GitHub">
+                </span>
+                </a>
+                
+                <a  href="https://twitter.com/liyu7771" class="navbar-item is-hidden-desktop" title="Twitter">
+                </span>
+                </a>
+                
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+
+            <div class="navbar-menu">
+                <div class="navbar-start">
+                    
+                    <a href="/about" class="navbar-item">About</a>
+                    
+                    <a href="/blog" class="navbar-item">Blog</a>
+                    
+                </div>
+
+                <div  class="navbar-end">
+                    
+                    <a href="https://github.com/liyu4" class="navbar-item is-hidden-touch" title="GitHub">
+                        <span class="icon"><i class='fab fa-github'></i></span>
+                    </a>
+                    
+                    <a href="https://twitter.com/liyu7771" class="navbar-item is-hidden-touch" title="Twitter">
+                        <span class="icon"><i class='fab fa-twitter'></i></span>
+                    </a>
+                    
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <script>
+        $(document).ready(function () {
+            $(".navbar-burger").click(function () {
+                $(".navbar-burger").toggleClass("is-active");
+                $(".navbar-menu").toggleClass("is-active");
+            })
+        })
+    </script>
+
+</header><main>
+<section class="section">
+    <article>
+        <div class="columns is-centered">
+            <div class="column max-800px">
+             <h1 class="title is-1">[GO]golang如何实现lru缓存</h1>
+            <div class="title subtitle heading is-6">
+                <div class="columns is-vcentered is-mobile">
+                    
+                    <div class="column is-narrow">
+                        <img src="/img/author_image.jpg" class="author-image">
+                    </div>
+                    
+                    <div class="column">
+                        <p>杨修</p>
+                        <p><time>February 19, 2020</time> |
+                            3  minutes </p>
+                    </div>
+                </div>
+
+            <div class="content">
+            <p>lru缓存，在当今依然非常热门的面试问题，笔者曾经面试【某蜓，音频领域的top公司】就问到了这个问题，当时回答的并不是好。那我们一起来看看如何从0-1实现一个完美的lru缓存。</p>
+<h2 id="简介">简介</h2>
+<p>缓存，在日常的使用中帮助我们降低接口的响应速度，常常是将一些数据加载到<strong>内存</strong>当中，调用方的请求进来之后服务可以直接从内存中拿到数据，然后直接返回，减少了代码里面的逻辑处理，如果有数据查询，或者网络调用的话，这些步骤都可以省去，这些时间是非常可观的。所以非时间敏感的数据是可以加载到内存中去的，但是主机的资源是有限的，这其中内存资源尤其的紧张，所以缓存策略会<strong>限制使用的内存大小</strong>，当缓存满了之后，新进来的元素就需要踢掉旧有的某个元素，这就涉及到<strong>缓存淘汰</strong>。</p>
+<h2 id="缓存淘汰算法介绍">缓存淘汰算法介绍</h2>
+<h4 id="fifofirst-input-first-output">FIFO(first input first output)</h4>
+<p>先进先出，符合人的直观感受，当超过设定的内存size之后淘汰掉先进的元素，如何设计这种数据结构，很容易联想起数组【array】和队列【Queue】，</p>
+<h4 id="数组的实现">数组的实现</h4>
+<p>当然这是很不灵活的方法，但是将其写下来，再跟其他方式对比，才能更加深入肌理。使用go的数组实现FIFO不复杂，如下图所示：淘汰e1的时候，数组中的元素需要往后移动，e2占了A[0]的位置，e3占了A[1]的位置，以此类推，直到空出的位置插入e6。</p>
+<p><img src="/img/FIFO-flow-chart.png" alt="image"></p>
+<h5 id="队列的实现">队列的实现</h5>
+<p>简单的话,使用golang的<code>container/list</code>包双向链表，不考虑时间的话，可以自己实现一个单链表，满足fifo的要求。</p>
+<p>如图所示：
+<img src="/img/single-list.jpg" alt="image"></p>
+<p>链表的好处在于，删除头部元素以及插入尾部元素的时间复杂度分别是O(1)，和O(n), 相较于array紧密的内存分布，list是通过指针相连，内存较为分散。但是array需要遍历才能移动元素，最终才能插入一个数据的方式，如果数量较大的情况下，计算的时间非常可观，list找到节点后添加/或者淘汰即可。</p>
+<h4 id="lfu">LFU</h4>
+<p>LFU  == least frequently used，最少使用的元素需要被淘汰，最少就意味着，每个元素都需要记录使用的次数，并且是有序的，同理也可以指定需要删除的数量即可，因为被标记为使用次数最少的元素会从缓存中淘汰点。在这，我们会一步一步实现lfu缓存。</p>
+<h5 id="数据结构">数据结构</h5>
+<p>实际上hashtable和双链表就够了，不需要其他复杂的算法。</p>
+<p>hashtable对应go里面的map，链表的话，可以使用<code>container/list</code>， 实现lfu的流程如下图：
+<img src="/img/lfu-flow.jpg" alt="image"></p>
+<ul>
+<li>缓存元素的次数按照顺序排列，每一个element里面包含了缓存的数据。</li>
+<li>缓存数据指向对应的list的node，图中A/B执向了node1，node1出现的次数是1次。</li>
+</ul>
+<p>第一个数据结构， 这是实际存储缓存的数据，key和value，frequencyParent代表这个数据出现的频次。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">CacheItem</span> <span style="color:#66d9ef">struct</span> {
+	<span style="color:#a6e22e">key</span>             <span style="color:#66d9ef">string</span>        <span style="color:#75715e">// Key of item
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">value</span>           <span style="color:#66d9ef">interface</span>{}   <span style="color:#75715e">// Value of item
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">frequencyParent</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">list</span>.<span style="color:#a6e22e">Element</span> <span style="color:#75715e">// Pointer to parent in frequency list
+</span><span style="color:#75715e"></span>}
+</code></pre></div><p>第二个数据结构，这是数据出现频次和当前频次下有多少元素，比如A/B属于出现一次的。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">FrequencyItem</span> <span style="color:#66d9ef">struct</span> {
+	<span style="color:#a6e22e">entries</span> <span style="color:#66d9ef">map</span>[<span style="color:#f92672">*</span><span style="color:#a6e22e">CacheItem</span>]<span style="color:#66d9ef">byte</span> <span style="color:#75715e">// Set of entries
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">freq</span>    <span style="color:#66d9ef">int</span>                 <span style="color:#75715e">// Access frequency
+</span><span style="color:#75715e"></span>}
+</code></pre></div><p>第三个数据结构，cache对象，保存了lfu的数据，通过bykey这个map可以直接找到缓存的数据，freqs是lfu缓存的频次分布，capacity容量，size当前使用的 情况。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Cache</span> <span style="color:#66d9ef">struct</span> {
+	<span style="color:#a6e22e">bykey</span>    <span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#f92672">*</span><span style="color:#a6e22e">CacheItem</span> <span style="color:#75715e">// Hashmap containing for O(1) access
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">freqs</span>    <span style="color:#f92672">*</span><span style="color:#a6e22e">list</span>.<span style="color:#a6e22e">List</span>            <span style="color:#75715e">// Linked list of frequencies
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">capacity</span> <span style="color:#66d9ef">int</span>                   <span style="color:#75715e">// Max number of items
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">size</span>     <span style="color:#66d9ef">int</span>                   <span style="color:#75715e">// Current size of cache
+</span><span style="color:#75715e"></span>}
+</code></pre></div><h5 id="初始化获取设置">初始化/获取/设置</h5>
+<p>首先需要构建cache</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">New</span>() <span style="color:#f92672">*</span><span style="color:#a6e22e">Cache</span> {
+	<span style="color:#a6e22e">cache</span> <span style="color:#f92672">:=</span> new(<span style="color:#a6e22e">Cache</span>)
+	<span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">bykey</span> = make(<span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#f92672">*</span><span style="color:#a6e22e">CacheItem</span>)
+	<span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">freqs</span> = <span style="color:#a6e22e">list</span>.<span style="color:#a6e22e">New</span>()
+	<span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">size</span> = <span style="color:#ae81ff">0</span>
+	<span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">capacity</span> = <span style="color:#ae81ff">100</span>
+
+	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">cache</span>
+}
+</code></pre></div><p>这个函数将构建一个新的Cache, 初始化了使用了默认的参数，并且直接使用的
+list包，其提供了完整的double list功能。</p>
+<p>第二个函数，实现Cache的Set方法</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">cache</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Cache</span>) <span style="color:#a6e22e">Set</span>(<span style="color:#a6e22e">key</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">value</span> <span style="color:#66d9ef">interface</span>{}) {
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">item</span>, <span style="color:#a6e22e">ok</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">bykey</span>[<span style="color:#a6e22e">key</span>]; <span style="color:#a6e22e">ok</span> {
+		<span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">value</span> = <span style="color:#a6e22e">value</span>
+		<span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">Increment</span>(<span style="color:#a6e22e">item</span>)
+	} <span style="color:#66d9ef">else</span> {
+		<span style="color:#a6e22e">item</span> <span style="color:#f92672">:=</span> new(<span style="color:#a6e22e">CacheItem</span>)
+		<span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">key</span> = <span style="color:#a6e22e">key</span>
+		<span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">value</span> = <span style="color:#a6e22e">value</span>
+		<span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">bykey</span>[<span style="color:#a6e22e">key</span>] = <span style="color:#a6e22e">item</span>
+		<span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">size</span><span style="color:#f92672">++</span>
+		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">atCapacity</span>() {
+			<span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">Evict</span>(<span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">capacity</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">10</span>)
+		}
+		<span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">Increment</span>(<span style="color:#a6e22e">item</span>)
+	}
+}
+</code></pre></div><p>get, 通过key获取缓存元素，这里会有次数的变化，所以需要调用Increment，维护cache的变化。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">cache</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Cache</span>) <span style="color:#a6e22e">Get</span>(<span style="color:#a6e22e">key</span> <span style="color:#66d9ef">string</span>) <span style="color:#66d9ef">interface</span>{} {
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">item</span>, <span style="color:#a6e22e">ok</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">bykey</span>[<span style="color:#a6e22e">key</span>]; <span style="color:#a6e22e">ok</span> {
+		<span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">Increment</span>(<span style="color:#a6e22e">item</span>)
+		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">value</span>
+	}
+
+	<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+}
+</code></pre></div><p>increment，维护了缓存元素的频次，确保cache正常。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">cache</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Cache</span>) <span style="color:#a6e22e">Increment</span>(<span style="color:#a6e22e">item</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">CacheItem</span>) {
+	<span style="color:#a6e22e">currentFrequency</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">frequencyParent</span>
+	<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">nextFrequencyAmount</span> <span style="color:#66d9ef">int</span>
+	<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">nextFrequency</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">list</span>.<span style="color:#a6e22e">Element</span>
+
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">currentFrequency</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">nextFrequencyAmount</span> = <span style="color:#ae81ff">1</span>
+		<span style="color:#a6e22e">nextFrequency</span> = <span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">freqs</span>.<span style="color:#a6e22e">Front</span>()
+	} <span style="color:#66d9ef">else</span> {
+		<span style="color:#a6e22e">nextFrequencyAmount</span> = <span style="color:#a6e22e">currentFrequency</span>.<span style="color:#a6e22e">Value</span>.(<span style="color:#f92672">*</span><span style="color:#a6e22e">FrequencyItem</span>).<span style="color:#a6e22e">freq</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>
+		<span style="color:#a6e22e">nextFrequency</span> = <span style="color:#a6e22e">currentFrequency</span>.<span style="color:#a6e22e">Next</span>()
+	}
+
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">nextFrequency</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">nextFrequency</span>.<span style="color:#a6e22e">Value</span>.(<span style="color:#f92672">*</span><span style="color:#a6e22e">FrequencyItem</span>).<span style="color:#a6e22e">freq</span> <span style="color:#f92672">!=</span> <span style="color:#a6e22e">nextFrequencyAmount</span> {
+		<span style="color:#a6e22e">newFrequencyItem</span> <span style="color:#f92672">:=</span> new(<span style="color:#a6e22e">FrequencyItem</span>)
+		<span style="color:#a6e22e">newFrequencyItem</span>.<span style="color:#a6e22e">freq</span> = <span style="color:#a6e22e">nextFrequencyAmount</span>
+		<span style="color:#a6e22e">newFrequencyItem</span>.<span style="color:#a6e22e">entries</span> = make(<span style="color:#66d9ef">map</span>[<span style="color:#f92672">*</span><span style="color:#a6e22e">CacheItem</span>]<span style="color:#66d9ef">byte</span>)
+		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">currentFrequency</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
+			<span style="color:#a6e22e">nextFrequency</span> = <span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">freqs</span>.<span style="color:#a6e22e">PushFront</span>(<span style="color:#a6e22e">newFrequencyItem</span>)
+		} <span style="color:#66d9ef">else</span> {
+			<span style="color:#a6e22e">nextFrequency</span> = <span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">freqs</span>.<span style="color:#a6e22e">InsertAfter</span>(<span style="color:#a6e22e">newFrequencyItem</span>, <span style="color:#a6e22e">currentFrequency</span>)
+		}
+	}
+
+	<span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">frequencyParent</span> = <span style="color:#a6e22e">nextFrequency</span>
+	<span style="color:#a6e22e">nextFrequency</span>.<span style="color:#a6e22e">Value</span>.(<span style="color:#f92672">*</span><span style="color:#a6e22e">FrequencyItem</span>).<span style="color:#a6e22e">entries</span>[<span style="color:#a6e22e">item</span>] = <span style="color:#ae81ff">1</span>
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">currentFrequency</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">Remove</span>(<span style="color:#a6e22e">currentFrequency</span>, <span style="color:#a6e22e">item</span>)
+	}
+}
+
+</code></pre></div><ul>
+<li>keyA/valueA第一次进入lfu的情况分析
+通过<code>Set</code>函数写入k/v， 缓存数量+1， 缓存freqitem, 通过<code>Increment</code>构造出来</li>
+</ul>
+<pre><code>缓存数据keyA/valueA
+CacheItemkeyA {
+    keyA
+    valueA
+    FrequencyItemkeyA
+}
+
+缓存数据对应的freq，出现了一次
+FrequencyItemkeyA {
+	CacheItemkeyA
+	1
+}
+
+cache.freqs的头部就是FrequencyItemkeyA
+</code></pre><ul>
+<li>keyA/valueA第二次进入lfu的情况分析</li>
+</ul>
+<pre><code>通过bykey，可以找到CacheItemkeyA
+
+更新缓存数据对应的freq，freq+1
+FrequencyItemkeyA {
+	CacheItemkeyA
+	2
+}
+
+cache.freqs的头部依然是FrequencyItemkeyA
+</code></pre><p>删除和更新的操作基本雷同，可以参照流程图和代码来验证。如果还想更加深入的理解可以尝试与我联系。</p>
+<p>当然这里没有考虑并发的问题，读者可以使用sync.Mutex实现。</p>
+<h4 id="lru">LRU</h4>
+<p>设计思路是，使用 HashMap 存储 key，这样可以做到 save 和 get key的时间都是 O(1)，而 HashMap 的 Value 指向双向链表实现的 LRU 的 Node 节点，如图所示。</p>
+<p><img src="/img/lru.jpg" alt="image"></p>
+<ul>
+<li>最后进来的元素放在dll的头部</li>
+<li>如果超过了dll的size则删除尾部的元素，对应图中就是0。</li>
+</ul>
+<h5 id="cacheitem">cacheItem</h5>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">cacheItem</span> <span style="color:#66d9ef">struct</span>{
+	 <span style="color:#a6e22e">key</span> <span style="color:#66d9ef">string</span>
+	 <span style="color:#a6e22e">value</span> <span style="color:#66d9ef">string</span>
+}
+</code></pre></div><ul>
+<li>定义dll中的ele</li>
+</ul>
+<h5 id="cache">cache</h5>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Cache</span> <span style="color:#66d9ef">struct</span>  {
+	<span style="color:#a6e22e">byKey</span> <span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#f92672">*</span><span style="color:#a6e22e">list</span>.<span style="color:#a6e22e">Element</span>
+	<span style="color:#a6e22e">ll</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">list</span>.<span style="color:#a6e22e">List</span>
+	<span style="color:#a6e22e">cap</span> <span style="color:#66d9ef">int</span>
+	<span style="color:#a6e22e">size</span> <span style="color:#66d9ef">int</span>
+}
+</code></pre></div><ul>
+<li>byKey只需要O(1)的查找</li>
+<li>ll维护缓存的前后关系</li>
+<li>cap容量</li>
+<li>size当前使用的大小</li>
+</ul>
+<h6 id="new-setget">new， set/get</h6>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">cache</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Cache</span>) <span style="color:#a6e22e">New</span>() <span style="color:#f92672">*</span><span style="color:#a6e22e">Cache</span>{
+	<span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">Cache</span>{
+		<span style="color:#a6e22e">byKey</span>: make(<span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#f92672">*</span><span style="color:#a6e22e">list</span>.<span style="color:#a6e22e">Element</span>),
+		<span style="color:#a6e22e">ll</span>:  <span style="color:#a6e22e">list</span>.<span style="color:#a6e22e">New</span>(),
+		<span style="color:#a6e22e">cap</span>: <span style="color:#ae81ff">100</span>,
+		<span style="color:#a6e22e">size</span>: <span style="color:#ae81ff">0</span>,
+	}
+}
+</code></pre></div><ul>
+<li>初始化</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">cache</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">Cache</span>) <span style="color:#a6e22e">Get</span>(<span style="color:#a6e22e">key</span> <span style="color:#66d9ef">string</span>) (<span style="color:#a6e22e">value</span> <span style="color:#66d9ef">string</span>) {
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">item</span>, <span style="color:#a6e22e">ok</span><span style="color:#f92672">:=</span><span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">byKey</span>[<span style="color:#a6e22e">key</span>]; <span style="color:#a6e22e">ok</span> {
+		<span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">ll</span>.<span style="color:#a6e22e">MoveToFront</span>(<span style="color:#a6e22e">item</span>)
+		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">Value</span>.(<span style="color:#f92672">*</span><span style="color:#a6e22e">cacheItem</span>).<span style="color:#a6e22e">value</span>
+	}
+	<span style="color:#66d9ef">return</span>
+}
+</code></pre></div><ul>
+<li>寻找缓存数据，如果有则将其移动到ll的前面</li>
+<li>返回value</li>
+<li>找不到就返回空字符串</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">cache</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">Cache</span>) <span style="color:#a6e22e">Set</span>(<span style="color:#a6e22e">key</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">value</span> <span style="color:#66d9ef">string</span>){
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">item</span>, <span style="color:#a6e22e">ok</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">byKey</span>[<span style="color:#a6e22e">key</span>]; <span style="color:#a6e22e">ok</span> {
+		<span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">ll</span>.<span style="color:#a6e22e">MoveToFront</span>(<span style="color:#a6e22e">item</span>)
+		<span style="color:#a6e22e">e</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">Value</span>.(<span style="color:#f92672">*</span><span style="color:#a6e22e">cacheItem</span>)
+		<span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">value</span> =  <span style="color:#a6e22e">value</span>
+		<span style="color:#66d9ef">return</span>
+	}<span style="color:#66d9ef">else</span>{
+		<span style="color:#a6e22e">newCacheItem</span> <span style="color:#f92672">:=</span>new(<span style="color:#a6e22e">cacheItem</span>)
+		<span style="color:#a6e22e">newCacheItem</span>.<span style="color:#a6e22e">key</span> = <span style="color:#a6e22e">key</span>
+		<span style="color:#a6e22e">newCacheItem</span>.<span style="color:#a6e22e">key</span> = <span style="color:#a6e22e">value</span>
+		<span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">size</span><span style="color:#f92672">++</span>
+		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">size</span> &gt; <span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">cap</span>{
+			<span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">remove</span>()
+		}
+		<span style="color:#a6e22e">ele</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">ll</span>.<span style="color:#a6e22e">PushFront</span>(<span style="color:#a6e22e">newCacheItem</span>)
+		<span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">byKey</span>[<span style="color:#a6e22e">key</span>] = <span style="color:#a6e22e">ele</span>
+		<span style="color:#66d9ef">return</span>
+	}
+	<span style="color:#66d9ef">return</span>
+}
+</code></pre></div><ul>
+<li>对已经存在的数据做更新，并且将其移动到ll的前面</li>
+<li>新增元素，size加一，如果超过了cache的cap则删除ll尾部的</li>
+<li>新增元素新加到ll的头部</li>
+</ul>
+<p>这里，没有考虑并发的情况，感兴趣的可以自己添加锁，并且可以实现更多的方法，比如驱逐等。另外cache cap的控制是计算的value的和，而不是其所占内存【bytes】的大小，这一点也是不够完美的，读者可以试着自己实现 ，或者跟我联系。</p>
+<h2 id="总结">总结</h2>
+<ul>
+<li><a href="https://ieftimov.com/post/when-why-least-frequently-used-cache-implementation-golang/">https://ieftimov.com/post/when-why-least-frequently-used-cache-implementation-golang/</a></li>
+<li><a href="https://www.geeksforgeeks.org/doubly-linked-list/">https://www.geeksforgeeks.org/doubly-linked-list/</a></li>
+<li><a href="https://geektutu.com/post/geecache-day1.html">https://geektutu.com/post/geecache-day1.html</a></li>
+</ul>
+            </div>
+            </div>
+        </div>
+    </article>
+
+
+    <section class="section">
+        <div class="columns is-centered">
+            <div class="column max-800px">
+                <div class="columns is-mobile">
+                    <div class="column has-text-left">
+                        
+                        <p>Previous post</p>
+                        <a href="/2020/02/gogolang%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E7%9A%84%E5%AE%9E%E7%8E%B0/">[GO]golang数据库连接池的实现</a>
+                        
+                    </div>
+                    <div class="column has-text-right">
+                        
+                        <p>Next post</p>
+                        <a href="/2020/02/go-context%E7%9A%84golang%E5%AE%9E%E7%8E%B0/">[GO] Context的golang实现</a>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</section>
+
+        </main><footer class="footer">
+    <div class="container">
+        <div class="columns has-text-centered">
+            
+            <div class="column is-narrow">
+                <a href="/about" class="">About</a>
+            </div>
+            
+            <div class="column is-narrow">
+                <a href="/privacy" class="">Privacy</a>
+            </div>
+            
+        </div>
+    </div>
+</footer></body>
+</html>

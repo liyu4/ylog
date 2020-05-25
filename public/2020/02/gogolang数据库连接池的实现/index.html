@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en-us"><head>
+    
+    <meta charset="utf-8">
+     
+    <meta name="viewpoint" content="with=device-width, initial-scale=1, viewport-fit=cover">
+    <title>[GO]golang数据库连接池的实现 | 自由.自在</title>
+    <meta name="description" content="Golang的database/sql包定义了常用的操作数据的方法，他提供了一个抽象，具体的driver依赖不同的数据库。
+比如mysql驱动比较有名的MySql。
+还有Sql Server使用较为广泛的库是 SqlServer。
+使用者只需要提供DSN(data source name)或者tcp连接, open() db之后会返回一个*sql.DB对象。DB本身没有连接数据库，
+只有当Query/Exec之后才会连接数据库。 ">
+    <meta property="description" content="My site description" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <link rel="canonical" href="/2020/02/gogolang%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E7%9A%84%E5%AE%9E%E7%8E%B0/" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css" />
+    <meta property="og:title" content="[GO]golang数据库连接池的实现" />
+<meta property="og:description" content="Golang的database/sql包定义了常用的操作数据的方法，他提供了一个抽象，具体的driver依赖不同的数据库。
+比如mysql驱动比较有名的MySql。
+还有Sql Server使用较为广泛的库是 SqlServer。
+使用者只需要提供DSN(data source name)或者tcp连接, open() db之后会返回一个*sql.DB对象。DB本身没有连接数据库，
+只有当Query/Exec之后才会连接数据库。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/2020/02/gogolang%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E7%9A%84%E5%AE%9E%E7%8E%B0/" />
+<meta property="og:image" content="/img/author_image.jpg"/>
+<meta property="article:published_time" content="2020-02-17T17:11:44+08:00" />
+<meta property="article:modified_time" content="2020-02-17T17:11:44+08:00" />
+
+    <meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="/img/author_image.jpg"/>
+
+<meta name="twitter:title" content="[GO]golang数据库连接池的实现"/>
+<meta name="twitter:description" content="Golang的database/sql包定义了常用的操作数据的方法，他提供了一个抽象，具体的driver依赖不同的数据库。
+比如mysql驱动比较有名的MySql。
+还有Sql Server使用较为广泛的库是 SqlServer。
+使用者只需要提供DSN(data source name)或者tcp连接, open() db之后会返回一个*sql.DB对象。DB本身没有连接数据库，
+只有当Query/Exec之后才会连接数据库。"/>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head><body><header>
+    <nav class="navbar" role="navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="/" title="home"  class="navbar-item">
+                    <span class="logo">
+                       <h1>自由.自在</h1>
+                </a>
+
+                
+                <a  href="https://github.com/liyu4" class="navbar-item is-hidden-desktop" title="GitHub">
+                </span>
+                </a>
+                
+                <a  href="https://twitter.com/liyu7771" class="navbar-item is-hidden-desktop" title="Twitter">
+                </span>
+                </a>
+                
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+
+            <div class="navbar-menu">
+                <div class="navbar-start">
+                    
+                    <a href="/about" class="navbar-item">About</a>
+                    
+                    <a href="/blog" class="navbar-item">Blog</a>
+                    
+                </div>
+
+                <div  class="navbar-end">
+                    
+                    <a href="https://github.com/liyu4" class="navbar-item is-hidden-touch" title="GitHub">
+                        <span class="icon"><i class='fab fa-github'></i></span>
+                    </a>
+                    
+                    <a href="https://twitter.com/liyu7771" class="navbar-item is-hidden-touch" title="Twitter">
+                        <span class="icon"><i class='fab fa-twitter'></i></span>
+                    </a>
+                    
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <script>
+        $(document).ready(function () {
+            $(".navbar-burger").click(function () {
+                $(".navbar-burger").toggleClass("is-active");
+                $(".navbar-menu").toggleClass("is-active");
+            })
+        })
+    </script>
+
+</header><main>
+<section class="section">
+    <article>
+        <div class="columns is-centered">
+            <div class="column max-800px">
+             <h1 class="title is-1">[GO]golang数据库连接池的实现</h1>
+            <div class="title subtitle heading is-6">
+                <div class="columns is-vcentered is-mobile">
+                    
+                    <div class="column is-narrow">
+                        <img src="/img/author_image.jpg" class="author-image">
+                    </div>
+                    
+                    <div class="column">
+                        <p>杨修</p>
+                        <p><time>February 17, 2020</time> |
+                            4  minutes </p>
+                    </div>
+                </div>
+
+            <div class="content">
+            <p>Golang的database/sql包定义了常用的操作数据的方法，他提供了一个抽象，具体的driver依赖不同的数据库。
+比如mysql驱动比较有名的<a href="https://github.com/go-sql-driver/mysql" title="">MySql</a>。
+还有Sql Server使用较为广泛的库是 <a href="https://github.com/denisenkom/go-mssqldb" title="">SqlServer</a>。
+使用者只需要提供DSN(data source name)或者tcp连接, open() db之后会返回一个*sql.DB对象。DB本身没有连接数据库，
+只有当Query/Exec之后才会连接数据库。</p>
+<p>假设需要从数据库中查询数据</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+
+<span style="color:#f92672">import</span>(
+    <span style="color:#e6db74">&#34;database/sql&#34;</span>
+    <span style="color:#a6e22e">_</span> <span style="color:#e6db74">&#34;github.com/denisenkom/go-mssqldb&#34;</span>
+)
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>(){
+    <span style="color:#a6e22e">db</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">sql</span>.<span style="color:#a6e22e">Connect</span>(<span style="color:#e6db74">&#34;mssql&#34;</span>, <span style="color:#a6e22e">dataSourceName</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		panic(<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Sprintf</span>(<span style="color:#e6db74">&#34;[db.GetSqlServer] open sql fail:%s&#34;</span>, <span style="color:#a6e22e">err</span>.<span style="color:#a6e22e">Error</span>()))
+	}
+
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">err</span>)
+        <span style="color:#66d9ef">return</span>
+    }
+    <span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">Close</span>()
+
+    <span style="color:#a6e22e">rows</span>,<span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">Query</span>(<span style="color:#e6db74">&#34;select top 1 foo, bar from test_table&#34;</span>)
+
+    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">foo</span> <span style="color:#a6e22e">bar</span> <span style="color:#66d9ef">string</span>
+    <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">rows</span>.<span style="color:#a6e22e">Next</span>(){
+        <span style="color:#a6e22e">_</span>,<span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">Scan</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">foo</span>, <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">bar</span>)
+        <span style="color:#66d9ef">if</span>  <span style="color:#a6e22e">err</span>  <span style="color:#f92672">!=</span>  <span style="color:#66d9ef">nil</span> {
+            <span style="color:#75715e">// do something
+</span><span style="color:#75715e"></span>        }
+        <span style="color:#66d9ef">break</span>
+    }
+    <span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span>}
+
+</code></pre></div><hr>
+<p>引入了两个包，一个是<code>database/sql</code>, 另外一个是<code>_ &quot;github.com/denisenkom/go-mssqldb&quot;</code>为什么需要引入这两个包？
+我们知道在Golang中包前面有下划线意味着只引入其中的<code>init()</code>方法, 那么go-mssqldb的init方法做了些什么</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// 第三方包定义的driver实体
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">driverInstance</span> = <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">Driver</span>{<span style="color:#a6e22e">processQueryText</span>: <span style="color:#66d9ef">true</span>}
+<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">driverInstanceNoProcess</span> = <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">Driver</span>{<span style="color:#a6e22e">processQueryText</span>: <span style="color:#66d9ef">false</span>}
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">init</span>() {
+    <span style="color:#75715e">// 注册到sql中，稍后我们来看，注册一个结构体进去有什么用
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">sql</span>.<span style="color:#a6e22e">Register</span>(<span style="color:#e6db74">&#34;mssql&#34;</span>, <span style="color:#a6e22e">driverInstance</span>)
+    <span style="color:#a6e22e">sql</span>.<span style="color:#a6e22e">Register</span>(<span style="color:#e6db74">&#34;sqlserver&#34;</span>, <span style="color:#a6e22e">driverInstanceNoProcess</span>)
+    <span style="color:#75715e">// 初始化一个函数， 用作发起网络调用
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">createDialer</span> = <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">p</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">connectParams</span>) <span style="color:#a6e22e">Dialer</span> {
+		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">netDialer</span>{<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">net</span>.<span style="color:#a6e22e">Dialer</span>{<span style="color:#a6e22e">KeepAlive</span>: <span style="color:#a6e22e">p</span>.<span style="color:#a6e22e">keepAlive</span>}}
+	}
+}
+
+</code></pre></div><p>如上的注册一个mssql驱动到sql中封装的非常简洁，我们进去看看里面做了什么</p>
+<hr>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">Register</span>(<span style="color:#a6e22e">name</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">driver</span> <span style="color:#a6e22e">driver</span>.<span style="color:#a6e22e">Driver</span>) {
+	<span style="color:#a6e22e">driversMu</span>.<span style="color:#a6e22e">Lock</span>()
+	<span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">driversMu</span>.<span style="color:#a6e22e">Unlock</span>()
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">driver</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
+		panic(<span style="color:#e6db74">&#34;sql: Register driver is nil&#34;</span>)
+	}
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">dup</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">drivers</span>[<span style="color:#a6e22e">name</span>]; <span style="color:#a6e22e">dup</span> {
+		panic(<span style="color:#e6db74">&#34;sql: Register called twice for driver &#34;</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">name</span>)
+	}
+	<span style="color:#a6e22e">drivers</span>[<span style="color:#a6e22e">name</span>] = <span style="color:#a6e22e">driver</span>
+}
+
+</code></pre></div><p><code>sql.Register(xxx)</code>函数的实现如下，有两个输入参数, 第一个是需要注册的数据库name，另外一个是实现了Driver的具体类型。</p>
+<hr>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Driver</span> <span style="color:#66d9ef">interface</span> {
+	<span style="color:#a6e22e">Open</span>(<span style="color:#a6e22e">name</span> <span style="color:#66d9ef">string</span>) (<span style="color:#a6e22e">Conn</span>, <span style="color:#66d9ef">error</span>)
+}
+
+<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">DriverContext</span> <span style="color:#66d9ef">interface</span> {
+	<span style="color:#a6e22e">OpenConnector</span>(<span style="color:#a6e22e">name</span> <span style="color:#66d9ef">string</span>) (<span style="color:#a6e22e">Connector</span>, <span style="color:#66d9ef">error</span>)
+}
+
+</code></pre></div><p><code>database/sql</code>定义了一个interface <code>Driver</code>, <code>DriverContext</code>，分别定义了方法 <code>Open()</code>和<code>OpenConnector()</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Driver</span> <span style="color:#66d9ef">struct</span> {
+	<span style="color:#a6e22e">log</span> <span style="color:#a6e22e">optionalLogger</span>
+	<span style="color:#a6e22e">processQueryText</span> <span style="color:#66d9ef">bool</span>
+}
+<span style="color:#75715e">// 实现了DriverContext
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">d</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Driver</span>) <span style="color:#a6e22e">OpenConnector</span>(<span style="color:#a6e22e">dsn</span> <span style="color:#66d9ef">string</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">Connector</span>, <span style="color:#66d9ef">error</span>) {
+	<span style="color:#a6e22e">params</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">parseConnectParams</span>(<span style="color:#a6e22e">dsn</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">err</span>
+	}
+	<span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">Connector</span>{
+		<span style="color:#a6e22e">params</span>: <span style="color:#a6e22e">params</span>,
+		<span style="color:#a6e22e">driver</span>: <span style="color:#a6e22e">d</span>,
+	}, <span style="color:#66d9ef">nil</span>
+}
+<span style="color:#75715e">// 实现了Driver
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">d</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Driver</span>) <span style="color:#a6e22e">Open</span>(<span style="color:#a6e22e">dsn</span> <span style="color:#66d9ef">string</span>) (<span style="color:#a6e22e">driver</span>.<span style="color:#a6e22e">Conn</span>, <span style="color:#66d9ef">error</span>) {
+	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">d</span>.<span style="color:#a6e22e">open</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Background</span>(), <span style="color:#a6e22e">dsn</span>)
+}
+</code></pre></div><p><code>driverInstance</code>和<code>driverInstanceNoProcess</code>我们只需要关注其中一个即可。 那么在go-mssqldb中
+<code>driverInstance</code>对应了什么？ 可以看到源码如上:</p>
+<hr>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">Open</span>(<span style="color:#a6e22e">driverName</span>, <span style="color:#a6e22e">dataSourceName</span> <span style="color:#66d9ef">string</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">DB</span>, <span style="color:#66d9ef">error</span>) {
+	<span style="color:#a6e22e">driversMu</span>.<span style="color:#a6e22e">RLock</span>()
+	<span style="color:#a6e22e">driveri</span>, <span style="color:#a6e22e">ok</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">drivers</span>[<span style="color:#a6e22e">driverName</span>]
+	<span style="color:#a6e22e">driversMu</span>.<span style="color:#a6e22e">RUnlock</span>()
+	<span style="color:#66d9ef">if</span> !<span style="color:#a6e22e">ok</span> {
+		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Errorf</span>(<span style="color:#e6db74">&#34;sql: unknown driver %q (forgotten import?)&#34;</span>, <span style="color:#a6e22e">driverName</span>)
+    }
+    <span style="color:#75715e">// 拿到带有ctx的DB，这里其实兼容了之前的版本
+</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">driverCtx</span>, <span style="color:#a6e22e">ok</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">driveri</span>.(<span style="color:#a6e22e">driver</span>.<span style="color:#a6e22e">DriverContext</span>); <span style="color:#a6e22e">ok</span> {
+		<span style="color:#a6e22e">connector</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">driverCtx</span>.<span style="color:#a6e22e">OpenConnector</span>(<span style="color:#a6e22e">dataSourceName</span>)
+		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+			<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">err</span>
+		}
+		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">OpenDB</span>(<span style="color:#a6e22e">connector</span>), <span style="color:#66d9ef">nil</span>
+    }
+    <span style="color:#75715e">// 拿到driver版本的DB
+</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">OpenDB</span>(<span style="color:#a6e22e">dsnConnector</span>{<span style="color:#a6e22e">dsn</span>: <span style="color:#a6e22e">dataSourceName</span>, <span style="color:#a6e22e">driver</span>: <span style="color:#a6e22e">driveri</span>}), <span style="color:#66d9ef">nil</span>
+}
+</code></pre></div><p>databse/sql拿到了go-mssqldb提供的driver之后做了什么？</p>
+<p>看代码可知，拿到了一个<code>*DB</code>实体，这个实体的driver部分由第三方提供，对于go-mssqldb来讲，具体的说是提供了driver以及里面包含的Connector</p>
+<hr>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// database/sql实现了通用的exec
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">db</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">DB</span>) <span style="color:#a6e22e">Exec</span>(<span style="color:#a6e22e">query</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">args</span> <span style="color:#f92672">...</span><span style="color:#66d9ef">interface</span>{}) (<span style="color:#a6e22e">Result</span>, <span style="color:#66d9ef">error</span>) {
+	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">ExecContext</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Background</span>(), <span style="color:#a6e22e">query</span>, <span style="color:#a6e22e">args</span><span style="color:#f92672">...</span>)
+}
+
+<span style="color:#75715e">// 进到db.ExecContext
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">db</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">DB</span>) <span style="color:#a6e22e">ExecContext</span>(<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">query</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">args</span> <span style="color:#f92672">...</span><span style="color:#66d9ef">interface</span>{}) (<span style="color:#a6e22e">Result</span>, <span style="color:#66d9ef">error</span>) {
+	<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">res</span> <span style="color:#a6e22e">Result</span>
+    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">err</span> <span style="color:#66d9ef">error</span>
+    <span style="color:#75715e">// 重试
+</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> &lt; <span style="color:#a6e22e">maxBadConnRetries</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
+        <span style="color:#75715e">// 执行方法db.exec
+</span><span style="color:#75715e"></span>		<span style="color:#a6e22e">res</span>, <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">exec</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">query</span>, <span style="color:#a6e22e">args</span>, <span style="color:#a6e22e">cachedOrNewConn</span>)
+		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#a6e22e">driver</span>.<span style="color:#a6e22e">ErrBadConn</span> {
+			<span style="color:#66d9ef">break</span>
+		}
+    }
+    <span style="color:#75715e">// 重试
+</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">==</span> <span style="color:#a6e22e">driver</span>.<span style="color:#a6e22e">ErrBadConn</span> {
+		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">exec</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">query</span>, <span style="color:#a6e22e">args</span>, <span style="color:#a6e22e">alwaysNewConn</span>)
+	}
+	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">res</span>, <span style="color:#a6e22e">err</span>
+}
+
+<span style="color:#75715e">// 显然最重要的方法是db.exec
+</span><span style="color:#75715e">// 进到db.exec
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">db</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">DB</span>) <span style="color:#a6e22e">exec</span>(<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">query</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">args</span> []<span style="color:#66d9ef">interface</span>{}, <span style="color:#a6e22e">strategy</span> <span style="color:#a6e22e">connReuseStrategy</span>) (<span style="color:#a6e22e">Result</span>, <span style="color:#66d9ef">error</span>) {
+    <span style="color:#75715e">// 根据策略获取数据库连接
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 注意 ！！！这个时候才真正的去获取conn
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">dc</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">conn</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">strategy</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">err</span>
+    }
+    <span style="color:#75715e">// 执行query语句 select top 1 foo, bar from test_table
+</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">execDC</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">dc</span>, <span style="color:#a6e22e">dc</span>.<span style="color:#a6e22e">releaseConn</span>, <span style="color:#a6e22e">query</span>, <span style="color:#a6e22e">args</span>)
+}
+
+</code></pre></div><p>日常开发过程当中常用的两类操作是Query/Exec, 就拿文章开头的<code>db.Query(&quot;select top 1 foo, bar from test_table&quot;)</code>来分析整个流程</p>
+<p>我们的期望是获得foo和bar对应coloum上的value。</p>
+<hr>
+<p><img src="/img/golang%E8%BF%9E%E6%8E%A5%E6%B1%A0%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90.jpg" alt="image"></p>
+<p>通过业务场景的带入 ，我们了解了一个查询最终会走到如上的<code>db.conn()</code>和<code>db.exexDC()</code>，</p>
+<p>那么它们经历就是上图所示的流程图逻辑。仔细看这张图，如果整个连接池为空的时候，必然需要新创建conn,</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">DB</span> <span style="color:#66d9ef">struct</span> {
+    <span style="color:#a6e22e">connector</span> <span style="color:#a6e22e">driver</span>.<span style="color:#a6e22e">Connector</span>
+    <span style="color:#75715e">// ignore ...
+</span><span style="color:#75715e"></span>}
+</code></pre></div><p>这是database/sql中<code>*DB</code>的定义，重点是看connector，通过connector发起<code>Connect()</code>, 才能创建有效的conn</p>
+<hr>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Driver</span> <span style="color:#66d9ef">struct</span> {
+	<span style="color:#a6e22e">log</span> <span style="color:#a6e22e">optionalLogger</span>
+	<span style="color:#a6e22e">processQueryText</span> <span style="color:#66d9ef">bool</span>
+}
+<span style="color:#75715e">// 实现了DriverContext
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">d</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Driver</span>) <span style="color:#a6e22e">OpenConnector</span>(<span style="color:#a6e22e">dsn</span> <span style="color:#66d9ef">string</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">Connector</span>, <span style="color:#66d9ef">error</span>) {
+    <span style="color:#75715e">// 忽略具体代码
+</span><span style="color:#75715e"></span>}
+<span style="color:#75715e">// 实现了Driver
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">d</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Driver</span>) <span style="color:#a6e22e">Open</span>(<span style="color:#a6e22e">dsn</span> <span style="color:#66d9ef">string</span>) (<span style="color:#a6e22e">driver</span>.<span style="color:#a6e22e">Conn</span>, <span style="color:#66d9ef">error</span>) {
+	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">d</span>.<span style="color:#a6e22e">open</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Background</span>(), <span style="color:#a6e22e">dsn</span>)
+}
+</code></pre></div><p>这里就稍微有一点不同了，从代码中可以看出, 第三方提供的driver有两个，并且返回的参数都不一致
+一个直接提供了connector，另外一个支持提供有效的conn</p>
+<hr>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">Open</span>(<span style="color:#a6e22e">driverName</span>, <span style="color:#a6e22e">dataSourceName</span> <span style="color:#66d9ef">string</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">DB</span>, <span style="color:#66d9ef">error</span>) {
+	<span style="color:#a6e22e">driversMu</span>.<span style="color:#a6e22e">RLock</span>()
+	<span style="color:#a6e22e">driveri</span>, <span style="color:#a6e22e">ok</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">drivers</span>[<span style="color:#a6e22e">driverName</span>]
+	<span style="color:#a6e22e">driversMu</span>.<span style="color:#a6e22e">RUnlock</span>()
+	<span style="color:#66d9ef">if</span> !<span style="color:#a6e22e">ok</span> {
+		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Errorf</span>(<span style="color:#e6db74">&#34;sql: unknown driver %q (forgotten import?)&#34;</span>, <span style="color:#a6e22e">driverName</span>)
+	}
+
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">driverCtx</span>, <span style="color:#a6e22e">ok</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">driveri</span>.(<span style="color:#a6e22e">driver</span>.<span style="color:#a6e22e">DriverContext</span>); <span style="color:#a6e22e">ok</span> {
+        <span style="color:#75715e">// 支持提供了connector
+</span><span style="color:#75715e"></span>		<span style="color:#a6e22e">connector</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">driverCtx</span>.<span style="color:#a6e22e">OpenConnector</span>(<span style="color:#a6e22e">dataSourceName</span>)
+		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+			<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">err</span>
+		}
+		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">OpenDB</span>(<span style="color:#a6e22e">connector</span>), <span style="color:#66d9ef">nil</span>
+	}
+    <span style="color:#75715e">// 通过dsnConnector提供connector
+</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">OpenDB</span>(<span style="color:#a6e22e">dsnConnector</span>{<span style="color:#a6e22e">dsn</span>: <span style="color:#a6e22e">dataSourceName</span>, <span style="color:#a6e22e">driver</span>: <span style="color:#a6e22e">driveri</span>}), <span style="color:#66d9ef">nil</span>
+}
+</code></pre></div><p>注册到<code>*DB</code>实体中的connector是不同的，drivercontext直接提供了Connector，并且其实现了和数据库通信的Connect()方法</p>
+<p>但是Driver并没有提供Connector，这是因为在database/sql中包了一层，也就是dsnConnector</p>
+<p>这里的差距我认为是代码迭代过程中的兼容所导致的</p>
+<hr>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">db</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">DB</span>) <span style="color:#a6e22e">conn</span>(<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">strategy</span> <span style="color:#a6e22e">connReuseStrategy</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">driverConn</span>, <span style="color:#66d9ef">error</span>) {
+    <span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">ci</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">connector</span>.<span style="color:#a6e22e">Connect</span>(<span style="color:#a6e22e">ctx</span>)
+    <span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span>}
+</code></pre></div><p>可以看见具体的<code>Connect()</code>数据库的方法都是通过注入到database/sql的connector实现的</p>
+<p>具体到driverctx和driver显然是不同的</p>
+<hr>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// Connect to the server and return a TDS connection.
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">c</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Connector</span>) <span style="color:#a6e22e">Connect</span>(<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>) (<span style="color:#a6e22e">driver</span>.<span style="color:#a6e22e">Conn</span>, <span style="color:#66d9ef">error</span>) {
+	<span style="color:#a6e22e">conn</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">driver</span>.<span style="color:#a6e22e">connect</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">c</span>, <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">params</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">conn</span>.<span style="color:#a6e22e">ResetSession</span>(<span style="color:#a6e22e">ctx</span>)
+	}
+	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">conn</span>, <span style="color:#a6e22e">err</span>
+}
+</code></pre></div><p>driverCtx直接可以通过<code>Connect(ctx context.Context)</code>获取有效的conn，</p>
+<hr>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">dsnConnector</span> <span style="color:#66d9ef">struct</span> {
+	<span style="color:#a6e22e">dsn</span>    <span style="color:#66d9ef">string</span>
+	<span style="color:#a6e22e">driver</span> <span style="color:#a6e22e">driver</span>.<span style="color:#a6e22e">Driver</span>
+}
+
+<span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">t</span> <span style="color:#a6e22e">dsnConnector</span>) <span style="color:#a6e22e">Connect</span>(<span style="color:#a6e22e">_</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>) (<span style="color:#a6e22e">driver</span>.<span style="color:#a6e22e">Conn</span>, <span style="color:#66d9ef">error</span>) {
+	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">driver</span>.<span style="color:#a6e22e">Open</span>(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">dsn</span>)
+}
+</code></pre></div><p>driver如何获取有效的conn呢，那就要从dsnConnector来讲了，转换一下 <code>db.connector.Connect() == db.dsnConnector.Connect()</code>
+可以看到最终调用了t.driver.Open(t.dsn)， 也就是说又回到了第三方提供的 driver上（注意不是driverctx），
+从database/sql的driver定义可知道，第三方driver（go-mssqldb的注册的driver），必须实现了<code>Open()</code>，事实上也确认实现了这个方法。
+也就是:</p>
+<hr>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">
+<span style="color:#75715e">// t.driver.Open(t.dsn)发起
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">d</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Driver</span>) <span style="color:#a6e22e">Open</span>(<span style="color:#a6e22e">dsn</span> <span style="color:#66d9ef">string</span>) (<span style="color:#a6e22e">driver</span>.<span style="color:#a6e22e">Conn</span>, <span style="color:#66d9ef">error</span>) {
+	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">d</span>.<span style="color:#a6e22e">open</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Background</span>(), <span style="color:#a6e22e">dsn</span>)
+}
+
+<span style="color:#75715e">// 分析数据库参数， 执行连接程序，获取 conn
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">d</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Driver</span>) <span style="color:#a6e22e">open</span>(<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">dsn</span> <span style="color:#66d9ef">string</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">Conn</span>, <span style="color:#66d9ef">error</span>) {
+	<span style="color:#a6e22e">params</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">parseConnectParams</span>(<span style="color:#a6e22e">dsn</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">err</span>
+	}
+	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">d</span>.<span style="color:#a6e22e">connect</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">params</span>)
+}
+</code></pre></div><p>终于得到了一个conn， 并且database/sql维护了一个conn的连接池，前文中提到的db.execDC, 就负责将参数注入到cmder（是我生造的词）中，</p>
+<p>cmder解析成sql server协议定义的字节流，go-mssqldb负责send/receiver， database/sql负责生成数据，比如foo， bar</p>
+<hr>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"> <span style="color:#75715e">// 执行query语句 select top 1 foo, bar from test_table
+</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">execDC</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">dc</span>, <span style="color:#a6e22e">dc</span>.<span style="color:#a6e22e">releaseConn</span>, <span style="color:#a6e22e">query</span>, <span style="color:#a6e22e">args</span>)
+</code></pre></div><p>综上，就是如何使用第三方库进行查询的流程，写入是一样的原理，这里不赘述，如果你看到了这里，你肯定会有一些自己的看法 。</p>
+<p>我觉得database/sql提供了通用的功能，比如维护连接池，执行query/exec，注册，数据转换
+第三库，其实也可以叫做package，实现database/sql定义的Driver, 然后Register,就轻松的连接到了sql上</p>
+<p>细节上的协议解析，发起连接（长连接），都依靠自身来解决</p>
+<p>这就像是OSI网络模型， 又分层的感觉在里面， 任何一层有改动只需要动其中一层即可</p>
+<p>但是不能说这样是没有问题的，比如driver和driverctx显然是兼容之后的结果，导致阅读代码的时候需要来回去看</p>
+<p>总体而言golang database/sql的实现是非常有借鉴和学习的意义.</p>
+            </div>
+            </div>
+        </div>
+    </article>
+
+
+    <section class="section">
+        <div class="columns is-centered">
+            <div class="column max-800px">
+                <div class="columns is-mobile">
+                    <div class="column has-text-left">
+                        
+                    </div>
+                    <div class="column has-text-right">
+                        
+                        <p>Next post</p>
+                        <a href="/2020/02/gogolang%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0lru%E7%BC%93%E5%AD%98/">[GO]golang如何实现lru缓存</a>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</section>
+
+        </main><footer class="footer">
+    <div class="container">
+        <div class="columns has-text-centered">
+            
+            <div class="column is-narrow">
+                <a href="/about" class="">About</a>
+            </div>
+            
+            <div class="column is-narrow">
+                <a href="/privacy" class="">Privacy</a>
+            </div>
+            
+        </div>
+    </div>
+</footer></body>
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en-us"><head>
+    
+    <meta charset="utf-8">
+     
+    <meta name="viewpoint" content="with=device-width, initial-scale=1, viewport-fit=cover">
+    <title>[GO] Context的golang实现 | 自由.自在</title>
+    <meta name="description" content="context是golang里面的标准库，在go里面到处都可以找到使用ctx的例子，网上有很多context的科普文章
+其中也有比较写的比较好的，这部分我会贴在文章末尾。今天我们主要是带着大家如何从0到1实现一个ctx，有了这种实践之后
+具体在go源码中的使用场景分析，我会放在下一篇blog中，并且结合golang数据库连接池实现一起探究其中的奥秘，确保能一举深刻的理解ctx。 ">
+    <meta property="description" content="My site description" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <link rel="canonical" href="/2020/02/go-context%E7%9A%84golang%E5%AE%9E%E7%8E%B0/" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css" />
+    <meta property="og:title" content="[GO] Context的golang实现" />
+<meta property="og:description" content="context是golang里面的标准库，在go里面到处都可以找到使用ctx的例子，网上有很多context的科普文章
+其中也有比较写的比较好的，这部分我会贴在文章末尾。今天我们主要是带着大家如何从0到1实现一个ctx，有了这种实践之后
+具体在go源码中的使用场景分析，我会放在下一篇blog中，并且结合golang数据库连接池实现一起探究其中的奥秘，确保能一举深刻的理解ctx。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/2020/02/go-context%E7%9A%84golang%E5%AE%9E%E7%8E%B0/" />
+<meta property="og:image" content="/img/author_image.jpg"/>
+<meta property="article:published_time" content="2020-02-21T15:32:54+08:00" />
+<meta property="article:modified_time" content="2020-02-21T15:32:54+08:00" />
+
+    <meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="/img/author_image.jpg"/>
+
+<meta name="twitter:title" content="[GO] Context的golang实现"/>
+<meta name="twitter:description" content="context是golang里面的标准库，在go里面到处都可以找到使用ctx的例子，网上有很多context的科普文章
+其中也有比较写的比较好的，这部分我会贴在文章末尾。今天我们主要是带着大家如何从0到1实现一个ctx，有了这种实践之后
+具体在go源码中的使用场景分析，我会放在下一篇blog中，并且结合golang数据库连接池实现一起探究其中的奥秘，确保能一举深刻的理解ctx。"/>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head><body><header>
+    <nav class="navbar" role="navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="/" title="home"  class="navbar-item">
+                    <span class="logo">
+                       <h1>自由.自在</h1>
+                </a>
+
+                
+                <a  href="https://github.com/liyu4" class="navbar-item is-hidden-desktop" title="GitHub">
+                </span>
+                </a>
+                
+                <a  href="https://twitter.com/liyu7771" class="navbar-item is-hidden-desktop" title="Twitter">
+                </span>
+                </a>
+                
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+
+            <div class="navbar-menu">
+                <div class="navbar-start">
+                    
+                    <a href="/about" class="navbar-item">About</a>
+                    
+                    <a href="/blog" class="navbar-item">Blog</a>
+                    
+                </div>
+
+                <div  class="navbar-end">
+                    
+                    <a href="https://github.com/liyu4" class="navbar-item is-hidden-touch" title="GitHub">
+                        <span class="icon"><i class='fab fa-github'></i></span>
+                    </a>
+                    
+                    <a href="https://twitter.com/liyu7771" class="navbar-item is-hidden-touch" title="Twitter">
+                        <span class="icon"><i class='fab fa-twitter'></i></span>
+                    </a>
+                    
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <script>
+        $(document).ready(function () {
+            $(".navbar-burger").click(function () {
+                $(".navbar-burger").toggleClass("is-active");
+                $(".navbar-menu").toggleClass("is-active");
+            })
+        })
+    </script>
+
+</header><main>
+<section class="section">
+    <article>
+        <div class="columns is-centered">
+            <div class="column max-800px">
+             <h1 class="title is-1">[GO] Context的golang实现</h1>
+            <div class="title subtitle heading is-6">
+                <div class="columns is-vcentered is-mobile">
+                    
+                    <div class="column is-narrow">
+                        <img src="/img/author_image.jpg" class="author-image">
+                    </div>
+                    
+                    <div class="column">
+                        <p>杨修</p>
+                        <p><time>February 21, 2020</time> |
+                            3  minutes </p>
+                    </div>
+                </div>
+
+            <div class="content">
+            <p>context是golang里面的标准库，在go里面到处都可以找到使用ctx的例子，网上有很多context的科普文章
+其中也有比较写的比较好的，这部分我会贴在文章末尾。今天我们主要是带着大家如何从0到1实现一个ctx，有了这种实践之后
+具体在go源码中的使用场景分析，我会放在下一篇blog中，并且结合<a href="http://www.youmakemeday.com/parse-implementation-of-golang-database-sql-connection/">golang数据库连接池实现</a>一起探究其中的奥秘，确保能一举深刻的理解ctx。</p>
+<p>context在源码中的<a href="https://golang.org/src/context/context.go?s=7884:7906#L61">定义</a></p>
+<pre><code>type Context interface {
+	Deadline() (deadline time.Time, ok bool)
+	Done() &lt;-chan struct{}
+	Err() error
+	Value(key interface{}) interface{}
+}
+</code></pre><p>包含了四个方法</p>
+<ul>
+<li>Deadline, 最后截止时间</li>
+<li>Done, channel类型</li>
+<li>Err, 返回错误</li>
+<li>Value, 返回携带的k/v值</li>
+</ul>
+<p>ctx总是从Background或者TODO开始，它们返回一个非nil的empty ctx，它没有value，永远不会取消
+没有deadline，总是位于req.ctx的顶层。让我们来实现一个emptyCtx.</p>
+<pre><code>// emptyCtx不会被取消, 没有值, 没有deadline. 不能是struct{}，因为类型对应的值必须要用不同的地址
+type emptyCtx int
+
+// 实现Deadline，返回空
+func (*emptyCtx) Deadline() (dealline time.Time, ok bool) {
+	return
+}
+
+// 实现Done，返回空
+func (*emptyCtx) Done() &lt;-chan struct{} {
+	return nil
+}
+
+// 实现Err返回空
+func (*emptyCtx) Err() error {
+	return nil
+}
+// 实现Value，返回空
+func (*emptyCtx) Value(key interface{}) interface{} {
+	return nil
+}
+</code></pre><ul>
+<li>emptyCtx实现了Context接口</li>
+<li>emptyCtx的方法返回的都是“空值”</li>
+<li>emptyCtx构成了最基本的，context.Background/context.TODO</li>
+</ul>
+<p>让我们实现Background和TODO</p>
+<pre><code>(
+    var background = new(emptyCtx)
+    var todo =       new(emptyCtx)
+)
+
+
+func Background() *emptyCtx {
+    return background
+}
+
+func TODO() *empty {
+    return todo
+}
+</code></pre><ul>
+<li>Background就是空的context实现</li>
+<li>TODO也是空的context实现，在你实在不知道传什么ctx的时候，<strong>传TODO是比nil更好的选择</strong></li>
+</ul>
+<p>用过context的都知道，常用的几个方法是</p>
+<ul>
+<li>func WithCancel(parent Context) (ctx Context, cancel CancelFunc) {//}</li>
+<li>func WithDeadline(parent Context, d time.Time) (Context, CancelFunc) {//}</li>
+<li>func WithTimeout(parent Context, timeout time.Duration) (Context, CancelFunc) {//}</li>
+<li>func WithValue(parent Context, key, val interface{}) Context {//}</li>
+</ul>
+<p>实战中我们也会去使用，类似于这样</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// 设置ctx，超时时间5秒
+</span><span style="color:#75715e">// 作为参数开启tx
+</span><span style="color:#75715e">// 如果数据库操作五秒没有执行完成
+</span><span style="color:#75715e">// 将返回错误
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">cancel</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">WithTimeout</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span><span style="color:#f92672">*</span><span style="color:#ae81ff">5</span>)
+	<span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">cancel</span>()
+	<span style="color:#a6e22e">tx</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">_sqlServer</span>.<span style="color:#a6e22e">BeginTx</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#66d9ef">nil</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#66d9ef">return</span>
+	}
+</code></pre></div><p>可见，实际使用的过程中是不需要关心底层是怎么实现的，接下来我们实现一个WithCancel</p>
+<pre><code>type cancelCtx struct {
+	Context               // 继承parent
+	done    chan struct{} // done
+	err     error         // error
+}
+</code></pre><ul>
+<li>定义cancelCtx结构体</li>
+<li>包含了Context,从上层的parent继承方法</li>
+<li>自定义done，实现Done()</li>
+<li>自定义err，实现Err()</li>
+</ul>
+<p>如下代码段所示：</p>
+<pre><code>func (ctx *cancelCtx) Done() chan struct{} { return ctx.done }
+
+func (ctx *cancelCtx) Err() error { return ctx.err }
+</code></pre><p>定义cancel函数类型,和cancelctx取消的错误</p>
+<pre><code>type CancelFunc func()
+
+var Canceled = errors.New(&quot;context canceled&quot;)
+</code></pre><p>对应用层暴露的WithCancel, 输入参数是parent，可以认为是上层传下来的
+返回一个新的ctx和cancel函数方法</p>
+<pre><code>func WithCancel(parent Context) (Context, CancelFunc) {
+	ctx := &amp;cancelCtx{
+		Context: parent,
+		done:    make(chan struct{}),
+	}
+
+	cancel := func() { ctx.cancel(Canceled）}
+
+	go func() {
+		select {
+		case &lt;-parent.Done():
+			// 上层取消
+			ctx.cancel(parent.Err())
+		case &lt;-ctx.Done():
+			// 下层取消
+		}
+	}()
+
+	return ctx, cancel
+}
+
+func (ctx *cancelCtx) cancel(err error) {
+	if ctx.err != nil {
+		return
+	}
+	ctx.err = err
+	close(ctx.done)
+}
+
+</code></pre><p>WithDeadline的实现，继承了cancelCtx，还加了deadline类型
+初始化的时候需要带上时间，调用链超时之后会报 context deadline</p>
+<pre><code>// 定义deadlineCtx
+type deadlineCtx struct {
+	*cancelCtx
+	deadline time.Time
+}
+
+// 返回截止日期
+func (ctx *deadlineCtx) Deadline() (deadline time.Time, ok bool) {
+	return ctx.deadline, true
+}
+
+var DeadlineExceeded = deadlineExceededErr{}
+
+type deadlineExceededErr struct{}
+
+func (deadlineExceededErr) Error() string   { return &quot;deadline exceeded &quot; }
+func (deadlineExceededErr) Timeout() bool   { return true }
+func (deadlineExceededErr) Temporary() bool { return true }
+
+func WithDeadline(parent Context, deadline time.Time) (Context, CancelFunc) {
+	cctx, cancel := WithCancel(parent)
+
+	ctx := &amp;deadlineCtx{
+		cancelCtx: cctx.(*cancelCtx),
+		deadline:  deadline,
+	}
+
+	// the line below has been replaced to work with version previous to go 1.8.
+	// timeout := time.Until(deadline)
+	timeout := deadline.Sub(time.Now())
+	t := time.AfterFunc(timeout, func() {
+		ctx.cancel(DeadlineExceeded)
+	})
+
+	stop := func() {
+		t.Stop()
+		cancel()
+	}
+
+	return ctx, stop
+}
+
+</code></pre><p>WithTimeout,是超过了预设的时间之后，就会报错，它只需要对WithDeadline进行封装即可。</p>
+<pre><code>func WithTimeout(parent Context, timeout time.Duration) (Context, CancelFunc) {
+	return WithDeadline(parent, time.Now().Add(timeout))
+}
+</code></pre><p>这是对ctx的一个基本实现，当前go版本的实现比这个稍微多一点，但是代码量依然很少</p>
+<p>golang context是非常优秀的实现，从中可以获益良多。</p>
+<p><a href="https://www.flysnow.org/2017/05/12/go-in-action-go-context.html">https://www.flysnow.org/2017/05/12/go-in-action-go-context.html</a></p>
+            </div>
+            </div>
+        </div>
+    </article>
+
+
+    <section class="section">
+        <div class="columns is-centered">
+            <div class="column max-800px">
+                <div class="columns is-mobile">
+                    <div class="column has-text-left">
+                        
+                        <p>Previous post</p>
+                        <a href="/2020/02/gogolang%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0lru%E7%BC%93%E5%AD%98/">[GO]golang如何实现lru缓存</a>
+                        
+                    </div>
+                    <div class="column has-text-right">
+                        
+                        <p>Next post</p>
+                        <a href="/2020/02/gocontext%E5%9C%A8golang%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E4%B8%AD%E7%9A%84%E5%AE%9E%E8%B7%B5/">[GO]Context在golang数据库连接池中的实践</a>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</section>
+
+        </main><footer class="footer">
+    <div class="container">
+        <div class="columns has-text-centered">
+            
+            <div class="column is-narrow">
+                <a href="/about" class="">About</a>
+            </div>
+            
+            <div class="column is-narrow">
+                <a href="/privacy" class="">Privacy</a>
+            </div>
+            
+        </div>
+    </div>
+</footer></body>
+</html>
