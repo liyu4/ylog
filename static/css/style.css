@@ -28,3 +28,30 @@ main {
 .title-image {
     padding-bottom: 2em;
 }
+
+p { text-transform: none; 
+}
+
+
+h1 { text-transform: none; 
+}
+
+h2 { text-transform: none; 
+}
+
+h3 { text-transform: none; 
+}
+
+h4 { text-transform: none; 
+}
+
+h5 { text-transform: none; 
+}
+
+h6 { text-transform: none; 
+}
+
+
+code { text-transform: none; 
+}
+

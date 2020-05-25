@@ -1,5 +1,5 @@
 baseURL = "/"
-languageCode = "zh-cn"
+languageCode = "en-us"
 title = "自由.自在"
 theme = "yellow"
 
@@ -14,14 +14,14 @@ authorImage = "/img/author_image.jpg"
 
 images = [ "/img/author_image.jpg" ]
 
+[[menu.main]]
+  name = "Blog"
+  url = "/blog"
 
 [[menu.main]]
   name = "About"
   url = "/about"
 
-[[menu.main]]
-  name = "Blog"
-  url = "/blog"
 
 [[menu.social]]
     name = "GitHub"
