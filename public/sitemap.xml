@@ -3,61 +3,15 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>/about/</loc>
-    <lastmod>2020-05-25T11:38:57+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/</loc>
-    <lastmod>2020-05-25T11:38:57+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/2020/03/300-days-alone/</loc>
-    <lastmod>2020-03-08T12:45:29+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/blog/</loc>
-    <lastmod>2020-03-08T12:45:29+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/2020/02/goweb%E4%B8%AD%E9%97%B4%E4%BB%B62/</loc>
-    <lastmod>2020-02-25T11:48:49+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/2020/02/goweb%E4%B8%AD%E9%97%B4%E4%BB%B61/</loc>
-    <lastmod>2020-02-25T11:46:08+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/2020/02/gocontext%E5%9C%A8golang%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E4%B8%AD%E7%9A%84%E5%AE%9E%E8%B7%B5/</loc>
-    <lastmod>2020-02-24T14:56:50+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/2020/02/go-context%E7%9A%84golang%E5%AE%9E%E7%8E%B0/</loc>
-    <lastmod>2020-02-21T15:32:54+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/2020/02/gogolang%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0lru%E7%BC%93%E5%AD%98/</loc>
-    <lastmod>2020-02-19T14:07:36+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/2020/02/gogolang%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E7%9A%84%E5%AE%9E%E7%8E%B0/</loc>
-    <lastmod>2020-02-17T17:11:44+08:00</lastmod>
-  </url>
-  
-  <url>
     <loc>/categories/</loc>
   </url>
   
   <url>
     <loc>/tags/</loc>
+  </url>
+  
+  <url>
+    <loc>/</loc>
   </url>
   
 </urlset>
