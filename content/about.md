@@ -9,3 +9,8 @@ draft: true
 毕业于井冈山大学
 
 从事后端开发工作 2016年--至今
+
+{{< rawhtml >}}
+    <img src="/img/wechatcode.jpeg" width="400">
+    <img src="/img/wechatpay.jpeg" width="400">
+{{< /rawhtml >}}
