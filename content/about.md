@@ -1,10 +1,8 @@
 ---
-title: "About"
+title: "关于我"
 date: 2020-05-25T11:38:57+08:00
 draft: true
 ---
-
-# 关于我
 
 杨修
 
