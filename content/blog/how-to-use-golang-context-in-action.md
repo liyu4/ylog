@@ -4,18 +4,22 @@ date: 2020-02-24T14:56:50+08:00
 draft: true
 ---
 
-我们都知道使用ctx可以控制goroutine，比如取消goroutine树，或者给ctx设置超时，以便整个ctx可以控制在预期的时间内执行，超时则不再继续执行，另外context也内置了deadline属性，开发者可以方便的控制自己的goroutine情况 。
+我们都知道使用ctx可以控制goroutine，比如取消goroutine树，或者给ctx设置一个超时，以便整个ctx树可以控制在预期的时间内执行完，不管【成功/失败】，另外context也内置了deadline属性，开发者可以方便的控制自己开启的goroutine情况 。
 <!--more-->
 
 
 # transaction and ctx
-golang在database/sql中实现的连接池，大量的使用ctx特性，举一个常见的例子：有一个需求，如果一个transaction执行的时间超过了5s则返回超时错误，并且回滚transaction，这样做的理由有两个实际的意义。
-* 前台用户不需要等待更久的时间
-* 一个执行不会一直占住一个连接（connection）
+golang在database/sql中的连接池和ctx深度结合，为了理解在日常后端开发中如何使用ctx这种特性帮助大家更好的开发。举一个常见的例子：
+有一个需求，
+1: 如果一个事物执行的时间超过了5s就返回超时错误。
+2: 回滚事物，释放资源。
+
+网络世界总是极端复杂的，网络抖动，数据库block，机房掉电等等，所以当超过预期时间了没有返回结果，程序可以自主的做一些事情，那么带有上下文的事物至少有以下两个 好处
+* 前台用户不需要等待更久的时间【正常应该是1s执行完的程序，如果5s都没有返回】
+* 一个执行不会一直占住一个连接（connection） 【数据库的连接是有限的】
 
 
-假设我们现在开启一个transaction对db中的表做一些操作
-
+我们看以下上面说的，具体的代码示例
 ```go
 package main
 
@@ -67,18 +71,18 @@ func main() {
 
 ```
 
-* 1 连接mysql，默认的database为db
-* 2 新增一个ctx，从Background开始，带有5s的超时，五秒之后ctx.Done会关闭，ctx.err = `context deadline exceeded`
-* 3 `BeginTx(ctx, nil)`, 这样tx就带有了ctx
-* 4 无论如何都执行rollback，确保资源释放
-* 5 执行一条sql语句
-* 6 强制sleep五秒
-* 7 再次执行一条sql，这个时候会报错，因为ctx超时了。
-* 8 错误信息 `sql: transaction has already been committed or rolled back`
+*  连接mysql，默认的database为db
+*  新增一个ctx，从Background开始，带有5s的超时，五秒之后ctx.Done会关闭，ctx.err = `context deadline exceeded`
+*  `BeginTx(ctx, nil)`, tx bind ctx
+*  无论如何都执行rollback，确保资源释放
+*  执行一条sql语句
+*  强制sleep五秒
+*  再次执行一条sql，这个时候会报错，因为ctx超时了。
+*  错误信息 `sql: transaction has already been committed or rolled back`
 
 
 
-那么问题就是，为什么会发生这样的错误，这样的错误符合我们的预期，但是并不是ctx的错误，这个我们后面再讲为什么会这样。
+那么问题就是，为什么会发生这样的错误，这样的错误不符合我们的预期，因为不是ctx超时后的错误，这个我们后面再讲为什么会这样。
 
 首先`BeginTx(...)`注入了ctx，注入的ctx做了如下的工作。
 
@@ -114,7 +118,7 @@ func (tx *Tx) rollback(discardConn bool) error {
 }
 ```
 
-* `BeginTx`开启了了带有ctx的tx，然后监控ctx是否done
+* `BeginTx`开启了了带有ctx的tx，然后监控【go awaitDone()】ctx是否done 
 * 如果`ctx.Done`, 那么则回滚tx，释放资源，设置`tx.Done = 1`
 
 
@@ -152,7 +156,7 @@ func (tx *Tx) grabConn(ctx context.Context) (*driverConn, releaseConn, error) {
 * 如果是没有设置ctx那么返回database/sql的自定义错误
 
 # 事务/exce/query都带上ctx
-让我们来看下，如果执行ExecContext的话，就会返回ctx的错误，比如在case中的我们设置的是ctx.WithTimeout(parent, duration), 翻看context.go可以看到内置的错误是`context deadline exceeded` 。
+让我们来看下，如果执行ExecContext的话，就会返回ctx的错误，比如在上面的case中我们设置的是ctx.WithTimeout(parent, duration), 翻看context.go源码可以看到内置的错误是`context deadline exceeded` 。
 
 
 ```go
@@ -217,11 +221,11 @@ func main() {
 
 
 # 总结
-* 如果是tx，建议带上ctx，这样可以控制执行的时间
+* 如果是数据库tx操作，建议带上ctx参数，设置超时之后，可以主动控制程序的资源。
 * 真正执行的函数，建议按照xxxContext()的方式执行,这样父节点ctx取消之后，所有子节点的ctx都能感应到。
-* 就算不是事务执行，如果对于时间有限制的话，也建议带上ctx
-* ctx通过WithTimeout/WithDeadline等copy之后，内部会检查父ctx是否有效，如果无效，则取消所有的子节点，并且close ctx.done， 设置ctx.err
-* 业务代码，如database/sql则需要自己监控ctx.Done()的状态，来决定是否需要继续往下执行
+* 就算不是事务执行，如果对于时间有限制的话，也建议带上ctx，比如长查询。
+* ctx通过WithTimeout/WithDeadline等copy parent之后获得了child ctx，内部会一直检查父ctx是否有效，如果无效，则取消所有的子节点，并且close ctx.done， 设置ctx.err。
+* 内部包，如果使用了ctx，自身需要监控ctx.Done状态。
 
 
 # Link
