@@ -6,10 +6,32 @@
     <description>Recent content in Blogs on 自由.自在</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 08 Mar 2020 12:45:29 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 03 Jun 2020 13:36:34 +0800</lastBuildDate>
     
 	<atom:link href="/blog/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Mysql Acid Feature</title>
+      <link>/2020/06/mysql-acid-feature/</link>
+      <pubDate>Wed, 03 Jun 2020 13:36:34 +0800</pubDate>
+      
+      <guid>/2020/06/mysql-acid-feature/</guid>
+      <description>事物【transaction】 数据库事物（简称：事物）是数据库管理系统（DBMS）的一个逻辑执行单元，由一个有限的数据库操作序列构成。
+数据库一般包含了一个序列的对read/write的操作，包含以下两个目的：
+ 为数据库操作序列提供了从失败中恢复到正常状态的方法，同时提供了数据库即使在异常状态下仍能保持一致的方法。 当多个应用程序在并发的访问数据库的时候，可以在应用程序之间提供一个隔离的办法，防止彼此的操作互干扰。  当事物提交给数据库管理系统（DBMS），DBMS需要确保事物中的所有操作都执行成功且其结果被永久的保存在数据库中，如果事物中有的操作没有完成，则事物中所有的操作都需要回滚，回到事物执行前的状态；同时，该事物对数据库或其他事物的执行无影响，所有的事物都好像独立运行。
+例子：
+小明使用支付宝，在淘宝上买了一件100块钱的可口可乐：
+ 小明的支付宝账户扣款100元 卖家余额增加100元  DBMS系统就是要确保以上两个操作【整个交易】要么一起完成，要么一起取消。否则就会出现，100元钱平白消失或者增加的情况。
+在现实情况下，失败的风险很高。在一个数据库事物执行的过程中，有可能会遇上数据库事物操作失败，数据库系统/操作系统出错，甚至存储介质出错等情况。这便需要DBMS对一个操作失败的事物执行恢复操作，将其恢复到数据库一致的状态。为了实现将数据库恢复到一致状态的功能，DBMS需要维护【事物日志】以追踪事物中所有影响数据库的操作。
+ACID definition  A (atomicity) 原子性，一个事物中的全部操作，要么全部完成，要么全部不完成，不会结束在中间某个环节。事物在执行过程中发生的错误，会被回滚到事物开始前的状态，就像这个事物从来都没有执行过一样。即事物不可被分割，也不可以被简约。 C (consistency) 一致性，在事物之前和事物之后，数据库的完整性没有被破坏。 I (isolation) 隔离性，数据库允许多个并发事物对数据库的读写和修改额能力，隔离性可以防止多个事物并发执行时由于交叉执行而导致数据的不一致，事物隔离分为不同的级别，read uncommitted/read committed/repeated read/serializable, 中文分别为，读未提交/读提交/可重复读/串行化。 D (durability) 持久性，事物处理结束后，对数据的修改是永久的，即使系统故障也不会丢失。  原子性: 事物日志undo log undo log,实现原子性的关键，是当事务回滚时能够撤销所有已经完成的数据库操作语句。InnoDB实现回滚，靠的是undo log：当事务对数据库进行修改时，InnoDB会生成对应的undo log；如果事务执行失败或调用了rollback，导致事务需要回滚，便可以利用undo log中的信息将数据回滚到修改之前的样子。
+undo log属于逻辑日志，它记录的是sql执行相关的信息。当发生回滚时，InnoDB会根据undo log的内容做与之前相反的工作：对于每个insert，回滚时会执行delete；对于每个delete，回滚时会执行insert；对于每个update，回滚时会执行一个相反的update，把数据改回去。
+以update操作为例：当事务执行update时，其生成的undo log中会包含被修改行的主键(以便知道修改了哪些行)、修改了哪些列、这些列在修改前后的值等信息，回滚时便可以使用这些信息将数据还原到update之前的状态。
+持久性：事物日志redo log redo log也是事物日志的一种。
+innodb作为mysql的存储引擎，数据是存放在磁盘上，如果每次读写数据操作都要做磁盘I/O，那么效率将会非常低，为此innodb提供了缓存，叫做buffer pool，buffer pool中包含了磁盘数据页中的部分数据的映射，以此作为访问数据库的缓存； 当从数据库中读取数据的时候，首先会从buffer pool中查找，如果buffer pool中没有，则从磁盘读取后放入buffer pool； 当向数据库中写入数据的时候，会首先写入buffer pool，buffer pool中的数据会按照一定的策略定期写入磁盘（这一过程称为flush）。
+buffer pool的引入，大大提高了读写数据库的效率，但是也带来了新的问题； 如果数据库宕机，而此时buffer pool中的数据未刷到磁盘中，就会造成数据丢失，数据库事物的持久性就无法保证。
+于是，引入redo log来解决这个问题； 当数据库修改之后，除了修改buffer pool，还会将操作变更记录在redo log中，当事物提交的时候，会调用fsync将redo log刷到磁盘中，即使，数据库宕机，之后数据库重启之后，会再次读取redo log重做相关操作。redo log 采取的是【write-ahead logging】，所有对数据库的修改先写入redo log，再写入到buffer pool中，由此来保证即使数据库宕机，也能保证数据的一致性。</description>
+    </item>
     
     <item>
       <title>300 Days Alone</title>
