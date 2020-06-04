@@ -1,5 +1,5 @@
 ---
-title: "Mysql Acid Feature"
+title: "MySQL Acid Feature"
 date: 2020-06-03T13:36:34+08:00
 draft: true
 ---
@@ -48,14 +48,14 @@ undo log属于逻辑日志，它记录的是sql执行相关的信息。当发生
 
 redo log也是事物日志的一种。
 
-innodb作为mysql的存储引擎，数据是存放在磁盘上，如果每次读写数据操作都要做磁盘I/O，那么效率将会非常低，为此innodb提供了缓存，叫做buffer pool，buffer pool中包含了磁盘数据页中的部分数据的映射，以此作为访问数据库的缓存； 当从数据库中读取数据的时候，首先会从buffer pool中查找，如果buffer pool中没有，则从磁盘读取后放入buffer pool； 当向数据库中写入数据的时候，会首先写入buffer pool，buffer pool中的数据会按照一定的策略定期写入磁盘（这一过程称为flush）。
+innodb作为MySQL的存储引擎，数据是存放在磁盘上，如果每次读写数据操作都要做磁盘I/O，那么效率将会非常低，为此innodb提供了缓存，叫做buffer pool，buffer pool中包含了磁盘数据页中的部分数据的映射，以此作为访问数据库的缓存； 当从数据库中读取数据的时候，首先会从buffer pool中查找，如果buffer pool中没有，则从磁盘读取后放入buffer pool； 当向数据库中写入数据的时候，会首先写入buffer pool，buffer pool中的数据会按照一定的策略定期写入磁盘（这一过程称为flush）。
 
 buffer pool的引入，大大提高了读写数据库的效率，但是也带来了新的问题； 如果数据库宕机，而此时buffer pool中的数据未刷到磁盘中，就会造成数据丢失，数据库事物的持久性就无法保证。
 
 于是，引入redo log来解决这个问题； 当数据库修改之后，除了修改buffer pool，还会将操作变更记录在redo log中，当事物提交的时候，会调用fsync将redo log刷到磁盘中，即使，数据库宕机，之后数据库重启之后，会再次读取redo log重做相关操作。redo log 采取的是【write-ahead logging】，所有对数据库的修改先写入redo log，再写入到buffer pool中，由此来保证即使数据库宕机，也能保证数据的一致性。
 
 * redo log属于顺序io，可以快速的将数据落到磁盘中
-* buffer pool属于随机io，并且mysql的page size是16kb，随机io会将整页替换掉。
+* buffer pool属于随机io，并且MySQL的page size是16kb，随机io会将整页替换掉。
 * redo log将保存的数据库变动写入数据库磁盘依然是随机io，这里会引入redo log buffer来加快落盘的速度，这里暂且不深谈。
 
 1. redo log与binlog
@@ -113,7 +113,7 @@ innodb的四种隔离级别中，只有串行化才是正在满足事物的特�
 
 https://www.zhihu.com/question/347744295/answer/835374786
 https://juejin.im/post/5e0f491ce51d4540e30a9b45
-http://rajtek.tripod.com/mysql.htm#buff_pool
+http://rajtek.tripod.com/MySQL.htm#buff_pool
 https://www.cnblogs.com/kismetv/p/10331633.html
 https://en.wiktionary.org/wiki/%E4%BA%8B%E7%89%A9
 https://zh.wikipedia.org/zh-cn/ACID
