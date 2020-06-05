@@ -15,6 +15,7 @@ mysql&gt; select * from foo; &#43;----&#43;-------------&#43;------&#43; | id | 
     <link rel="canonical" href="/2020/06/mysql-isolation-level-introduction/" />
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/style.css" />
+    <link rel='icon' href='/img/favicon.ico' type='image/x-icon' />
     <meta property="og:title" content="MySQL Isolation Level Introduction" />
 <meta property="og:description" content="事物的隔离级别 当对数据库的操作是并发的，多个事物互相交叉运行，可能会出现不同的事物，对同一个数据进行读写操作，极大的概率会破坏预期。mysql的innodb存储引擎提出了四种隔离级别；
  读未提交 （read uncommitted） 读提交 （read committed） 可重复读 （read repeated） 串行化 （serializable）  隔离级别定义了事物之间相互影响的关系，比如最严格的串行化，意味着两个事物对同一批数据进行操作，只能是其中一个事物执行，另外的事物“排队”等待，当前面的事物执行完毕，才能执行，这就说明了，事物之间不会存在影响， 其他的三种隔离级别都不满足严格的【事物】定义。
