@@ -47,11 +47,11 @@
     </item>
     
     <item>
-      <title>Why_mysql_innodb_use_b&#43;_tree</title>
-      <link>/2020/07/why_mysql_innodb_use_b-_tree/</link>
+      <title>Why MySQL Innodb engine use b&#43; tree as store of index</title>
+      <link>/2020/07/why-mysql-innodb-engine-use-b-tree-as-store-of-index/</link>
       <pubDate>Mon, 06 Jul 2020 10:13:10 +0800</pubDate>
       
-      <guid>/2020/07/why_mysql_innodb_use_b-_tree/</guid>
+      <guid>/2020/07/why-mysql-innodb-engine-use-b-tree-as-store-of-index/</guid>
       <description>背景 这个问题是一个高频的面试问题，DBMS的数据库有一个要求，保持数据的持久性，那么放在内存中，由于内存掉电「断电」之后数据会丢失，且内存的价格很贵，所以mysql会选择磁盘「当然也可以不限制与此」作为数据持久化的存储方案。
 优势如下 1： 容量大价格便宜，TB甚至PB级别「PB=1024tTB，TB=1024G」 2： 持久性，磁盘的数据不易丢失「物理的损坏除外」 3： 容易制造
 劣势如下 1： 和内存相比读取速度较慢 2： 机械运动，稳定性不够「依赖磁臂的寻道等物理操作」

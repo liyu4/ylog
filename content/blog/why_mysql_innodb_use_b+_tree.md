@@ -1,5 +1,5 @@
 ---
-title: "Why_mysql_innodb_use_b+_tree"
+title: "Why MySQL Innodb engine use b+ tree as store of index"
 date: 2020-07-06T10:13:10+08:00
 draft: true
 ---
