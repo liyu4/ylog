@@ -37,11 +37,13 @@ mysql作为关系型数据库，单表的数据量可支持到千万级别，其
 二叉树图1-1；
 ![image](/img/bst+link.png)
 
-# 平衡二叉树「self-balancing-binary-search-tree」
+# 平衡二叉树「self-balancing-binary-search-tree」 
 
 AVL全称自平衡树，叫这个名字是因为，这是他发明者字母的组合（G. M. Adelson-Velsky 和 E. M. Landis）。
 
 AVL的定义是；任何节点的两子树的最大高度差别为1「注意这里说的其实是绝对值」。其删除/增加的操作通过旋转来保持平衡，并且左右两个子树都是平衡的。
+
+旋转分为ll，rr，lr，rl四种操作，其可以保证avl的高度平衡。但是大量平衡操作非常耗费时间。
 
 
 
