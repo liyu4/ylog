@@ -62,7 +62,19 @@
       <pubDate>Wed, 15 Jul 2020 14:23:24 +0800</pubDate>
       
       <guid>/2020/07/hash/</guid>
-      <description></description>
+      <description>所有的语言都会带有map这种数据结构，比如go语言叫做map，Python叫做dic，redis是使用c语言实现的内存数据库，由于c没有自带map，所以redis也有自己的字典实现。
+另外有趣的是，mysql也有一种index叫做哈希索引，可见hash是一种极其常见且用途广泛的数据结构。
+hash的特性  hash函数，不同输入， 经过函数的转化会得到一个摘要。 hash function不是万能的，根据场景的不同选择不同的hash function。 hash函数是有可能产生碰撞的，尤其是数据量非常大的时候 「如何解collision」？ 计算机内存不是无限的，一个可预见扩张的map，如何扩容？ 查询时间复杂度O(1), 一步查找。  hash实现 hash可以使用很多方式实现常见的有
+ MD4 MD5 SHA-1 取模 CRC32  这些都是非常常见的hash函数，对于编程语言，可能会使用数组来存储key对应的value
+hash冲突解决 一个设计良好的hash函数，输出比输入大，输出足够均匀，理想很饱满，现实往往做不到。
+hash冲突指的是，不同的key，hash成同一个摘要。
+比如
+// key value pair 分别为1 a和11 b // 取模之后 hashIndex1 := 1%10 hashIndex2 := 11%10 hashIndex1 = 1 hashIndex2 = 1 // 两者相同，如果底层是数组实现的话，那么就会拿到 // key 1 和 11 都会拿到a，显然这和输入是不对应的。 为了解决hash冲突一般有两个办法，开放地址法和链表法
+开放地址法 在数组中找到下一个为空的地方，将数据写入，比如上面的例子。
+key 1 已经占据了数组下标为1的slot，那么11插入的时候就找下标1之后的slot是否为空，如果为空则写入key 11对应的value。
+这个办法的有点是实现简单，但是一旦底层数组已经有足够多的数据，寻找空slot和获取value的时间都会变的很大。
+链表法 链表法的原理是，底层数据存的是链表的head指针，链表存了真实的数据， 冲突的数据都会加载在链表的尾部，寻找数据的时候遍历链表然后比较value是否和预期一致。
+rehash 对于redis而言，rehash是通过dic0和dic1来实现的，会有一个is_rehash变量。</description>
     </item>
     
     <item>
