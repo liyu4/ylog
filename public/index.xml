@@ -12,6 +12,42 @@
     
     
     <item>
+      <title>Use_tcpdump_parcel_three_way_shakehand</title>
+      <link>/2020/09/use_tcpdump_parcel_three_way_shakehand/</link>
+      <pubDate>Wed, 09 Sep 2020 11:14:20 +0800</pubDate>
+      
+      <guid>/2020/09/use_tcpdump_parcel_three_way_shakehand/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Quick_understand_network_protocl_3</title>
+      <link>/2020/09/quick_understand_network_protocl_3/</link>
+      <pubDate>Wed, 09 Sep 2020 11:13:51 +0800</pubDate>
+      
+      <guid>/2020/09/quick_understand_network_protocl_3/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Quick_understand_network_protocl_2</title>
+      <link>/2020/09/quick_understand_network_protocl_2/</link>
+      <pubDate>Wed, 09 Sep 2020 11:13:49 +0800</pubDate>
+      
+      <guid>/2020/09/quick_understand_network_protocl_2/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Quick_understand_network_protocl_1</title>
+      <link>/2020/09/quick_understand_network_protocl_1/</link>
+      <pubDate>Wed, 09 Sep 2020 11:13:46 +0800</pubDate>
+      
+      <guid>/2020/09/quick_understand_network_protocl_1/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Balance</title>
       <link>/2020/07/balance/</link>
       <pubDate>Wed, 15 Jul 2020 14:23:42 +0800</pubDate>
@@ -64,7 +100,8 @@ mysql作为关系型数据库，单表的数据量可支持到千万级别，其
 二叉树图1-1； 平衡二叉树「self-balancing-binary-search-tree」 AVL全称自平衡树，叫这个名字是因为，这是他发明者字母的组合（G. M. Adelson-Velsky 和 E. M. Landis）。
 AVL的定义是；任何节点的两子树的最大高度差别为1「注意这里说的其实是绝对值」。其删除/增加的操作通过旋转来保持平衡，并且左右两个子树都是平衡的。
 旋转分为ll，rr，lr，rl四种操作，其可以保证avl的高度平衡。但是大量平衡操作非常耗费时间。
-b树 b+树 links: https://baike.baidu.com/item/AVL%E6%A0%91/10986648?fr=aladdins</description>
+b树 为什么要发明b树，
+b+树 links: https://baike.baidu.com/item/AVL%E6%A0%91/10986648?fr=aladdinss</description>
     </item>
     
     <item>
