@@ -12,11 +12,11 @@
     
     
     <item>
-      <title>Using tcpdump parse three way shake hand</title>
-      <link>/2020/09/using-tcpdump-parse-three-way-shake-hand/</link>
+      <title>Using tcpdump parse three way handshake</title>
+      <link>/2020/09/using-tcpdump-parse-three-way-handshake/</link>
       <pubDate>Wed, 09 Sep 2020 14:14:58 +0800</pubDate>
       
-      <guid>/2020/09/using-tcpdump-parse-three-way-shake-hand/</guid>
+      <guid>/2020/09/using-tcpdump-parse-three-way-handshake/</guid>
       <description>引言 tcp是传输控制控制协议，建立点对点的全双工通信，稳定的通信建立和释放是怎么一个过程？
 三次握手过程 三次握手是建立稳定连接的最少次数，再多也没有必要。
 环境： Macos 抓包工具： tcpdump 打开terminal，输入如下命令
