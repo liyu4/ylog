@@ -7,13 +7,16 @@ draft: true
 # 引言
 tcp是传输控制控制协议，建立点对点的全双工通信，稳定的通信建立和释放是怎么一个过程？
 
-
 # 三次握手过程
+
+连接示意图
+
+![](https://ftp.bmp.ovh/imgs/2020/09/1a729d9bb474524b.jpg)
 
 三次握手是建立稳定连接的最少次数，再多也没有必要。
 
 ```
-环境： Macos
+环境： MacOS
 抓包工具： tcpdump
 ```
 
@@ -21,14 +24,14 @@ tcp是传输控制控制协议，建立点对点的全双工通信，稳定的�
 ```
 sudo tcpdump -vv -i en0 -S host www.baidu.com
 ```
+* --v 显示更多详细信息
+* -i 制定适配器「网卡」
+* host 指定目标主机，其他主机的包就会被过滤掉
 
---v 显示更多详细信息
--i 制定适配器「网卡」
-host 指定目标主机，其他主机的包就会被过滤掉
 
 命令运行之后
 ```
-~ sudo tcpdump -vv -i en0 -S host www.baidu.com
+sudo tcpdump -vv -i en0 -S host www.baidu.com
 tcpdump: listening on en0, link-type EN10MB (Ethernet), capture size 262144 bytes
 ```
 
@@ -61,17 +64,28 @@ curl www.baidu.com
 
 # 四次挥手过程
 
+释放连接示意图
+
+![](https://ftp.bmp.ovh/imgs/2020/09/44f1125995a44907.jpg)
+
+
 客户端ctl+c，主动断开连接
 ```
  192.168.1.3.61282 > 104.193.88.123.http: Flags [F.], cksum 0xb8de (correct), seq 4118482580, ack 3905661117, win 2048, options [nop,nop,TS val 1442650912 ecr 1755042800], length 0
 23:04:25.432766 IP (tos 0x0, ttl 51, id 20136, offset 0, flags [DF], proto TCP (6), length 52)
-    104.193.88.123.http > 192.168.1.3.61282: Flags [.], cksum 0xc00f (correct), seq 3905661117, ack 4118482581, win 57, options [nop,nop,TS val 1755042950 ecr 1442650912], length 0
+    104.193.88.123.http > 192.168.1.3.61282: Flags [.], cksum 0xc00f (correct), seq c, ack 4118482581, win 57, options [nop,nop,TS val 1755042950 ecr 1442650912], length 0
 23:04:25.432775 IP (tos 0x0, ttl 51, id 20137, offset 0, flags [DF], proto TCP (6), length 52)
     104.193.88.123.http > 192.168.1.3.61282: Flags [F.], cksum 0xc00e (correct), seq 3905661117, ack 4118482581, win 57, options [nop,nop,TS val 1755042950 ecr 1442650912], length 0
 23:04:25.432905 IP (tos 0x0, ttl 64, id 0, offset 0, flags [DF], proto TCP (6), length 52)
     192.168.1.3.61282 > 104.193.88.123.http: Flags [.], cksum 0xb7b5 (correct), seq 4118482581, ack 3905661118, win 2048, options [nop,nop,TS val 1442651058 ecr 1755042950], length 0
 ```
-TODO 杨修 四次挥手的过程分析
+
+* 本机向百度发起一个FIN信号， seq = 4118482580, ack = 3905661117
+* 百度向本机回复一个ACK信号 ，seq = 4118482580, ack = 4118482581
+* 百度向本机发送一个FIN信号， seq = 3905661117, ack = 4118482581
+* 本机向百度发送一个ACK信号， seq = 4118482581，ack = 3905661118
+
+
 
 # 参数解释
 
@@ -86,10 +100,7 @@ TODO 杨修 四次挥手的过程分析
 | NONE | [.] | Placeholder, usually used for ACK. |
 
 
-
-作者：舌尖上的大胖
-链接：https://www.jianshu.com/p/a57a5b0e58f0#
-來源：简书
-简书著作权归作者所有，任何形式的转载都请联系作者获得授权并注明出处。
-
 # 总结
+
+三次握手和四次握手都是一个有限状态机，需要三次握手是因为防止重复的连接被建立。
+四次我握手是因为，TCP是全双工通信，所以很多人把其成为，两次”两次握手“.
