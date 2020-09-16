@@ -18,9 +18,6 @@ images = [ "/img/author_image.jpg" ]
   name = "Blog"
   url = "/blog"
 
-[[menu.main]]
-  name = "About"
-  url = "/about"
 
 
 [[menu.social]]
