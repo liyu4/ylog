@@ -42,12 +42,12 @@ buffer pool的引入，大大提高了读写数据库的效率，但是也带来
 于是，引入redo log来解决这个问题； 当数据库修改之后，除了修改buffer pool，还会将操作变更记录在redo log中，当事物提交的时候，会调用fsync将redo log刷到磁盘中，即使，数据库宕机，之后数据库重启之后，会再次读取redo log重做相关操作。redo log 采取的是【write-ahead logging】，所有对数据库的修改先写入redo log，再写入到buffer pool中，由此来保证即使数据库宕机，也能保证数据的一致性。" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/2020/06/mysql-acid-feature/" />
-<meta property="og:image" content="/img/author_image.jpg"/>
+<meta property="og:image" content="https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg"/>
 <meta property="article:published_time" content="2020-06-03T13:36:34+08:00" />
 <meta property="article:modified_time" content="2020-06-03T13:36:34+08:00" />
 
     <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:image" content="/img/author_image.jpg"/>
+<meta name="twitter:image" content="https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg"/>
 
 <meta name="twitter:title" content="MySQL Acid Feature"/>
 <meta name="twitter:description" content="事物【transaction】 数据库事物（简称：事物）是数据库管理系统（DBMS）的一个逻辑执行单元，由一个有限的数据库操作序列构成。
@@ -133,7 +133,7 @@ buffer pool的引入，大大提高了读写数据库的效率，但是也带来
                 <div class="columns is-vcentered is-mobile">
                     
                     <div class="column is-narrow">
-                        <img src="/img/author_image.jpg" class="author-image">
+                        <img src="https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg" class="author-image">
                     </div>
                     
                     <div class="column">

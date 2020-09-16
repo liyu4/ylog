@@ -10,9 +10,9 @@ description = "不再是少年"
 themeColor = "theme-base-08"
 
 author = "杨修"
-authorImage = "/img/author_image.jpg"
+authorImage = "https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg"
 
-images = [ "/img/author_image.jpg" ]
+images = [ "https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg" ]
 
 [[menu.main]]
   name = "Blog"

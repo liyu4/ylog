@@ -24,12 +24,12 @@ mysql&gt; select * from foo; &#43;----&#43;-------------&#43;------&#43; | id | 
  脏读读到的是其他事物未提交的数据 不可重复读读到的是其他事物已经提交的数据  mysql&gt; select * from foo; &#43;----&#43;-------------&#43;------&#43; | id | name | year | &#43;----&#43;-------------&#43;------&#43; | 1 | li_lei | 2000 | | 2 | han_mei_mei | 1992 | | 3 | shang_hai | 1993 | &#43;----&#43;-------------&#43;------&#43; 幻读 幻读，事物1读取到的行数和之前读取到的不一致。" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/2020/06/mysql-isolation-level-introduction/" />
-<meta property="og:image" content="/img/author_image.jpg"/>
+<meta property="og:image" content="https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg"/>
 <meta property="article:published_time" content="2020-06-04T10:23:52+08:00" />
 <meta property="article:modified_time" content="2020-06-04T10:23:52+08:00" />
 
     <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:image" content="/img/author_image.jpg"/>
+<meta name="twitter:image" content="https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg"/>
 
 <meta name="twitter:title" content="MySQL Isolation Level Introduction"/>
 <meta name="twitter:description" content="事物的隔离级别 当对数据库的操作是并发的，多个事物互相交叉运行，可能会出现不同的事物，对同一个数据进行读写操作，极大的概率会破坏预期。mysql的innodb存储引擎提出了四种隔离级别；
@@ -106,7 +106,7 @@ mysql&gt; select * from foo; &#43;----&#43;-------------&#43;------&#43; | id | 
                 <div class="columns is-vcentered is-mobile">
                     
                     <div class="column is-narrow">
-                        <img src="/img/author_image.jpg" class="author-image">
+                        <img src="https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg" class="author-image">
                     </div>
                     
                     <div class="column">
