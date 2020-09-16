@@ -1,4 +1,4 @@
-baseURL = "/"
+baseURL = ""
 languageCode = "en-us"
 title = "自由.自在"
 theme = "yellow"
@@ -14,9 +14,9 @@ authorImage = "https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg"
 
 images = [ "https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg" ]
 
-[[menu.main]]
-  name = "Blog"
-  url = "/blog"
+#[[menu.main]]
+# name = "Blog"
+#url = "/blog"
 
 
 
