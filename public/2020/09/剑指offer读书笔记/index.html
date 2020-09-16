@@ -15,9 +15,9 @@ go
 type Singleton struct { } var singleton *Singleton func GetSingleton() *Singleton s{ if singleton == nil { singleton = new(single) } return singleton } 第二种写法，加锁，确定只有一个线程可以实例化singleton, 新的问题是，锁粒度太大
 type Singleton struct { } var singleton *Singleton func GetSingleton() *Singleton { lock() if singleton == nil { singleton = new(single) } unlock() return singleton } 第三种写法，锁粒度小一点, 有那味道了，但是还是会有多线程的问题，两个线程可以同时进入if singleton == nil, 还是会加锁两次， 并且实例化两次。 ">
     <meta property="description" content="My site description" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <link rel="stylesheet" href="/front/bulma.min.css">
     <link rel="canonical" href="/2020/09/%E5%89%91%E6%8C%87offer%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" />
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="/front/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/style.css" />
     <link rel='icon' href='/img/favicon.ico' type='image/x-icon' />
     <meta property="og:title" content="剑指offer读书笔记" />
@@ -50,7 +50,7 @@ go
 type Singleton struct { } var singleton *Singleton func GetSingleton() *Singleton s{ if singleton == nil { singleton = new(single) } return singleton } 第二种写法，加锁，确定只有一个线程可以实例化singleton, 新的问题是，锁粒度太大
 type Singleton struct { } var singleton *Singleton func GetSingleton() *Singleton { lock() if singleton == nil { singleton = new(single) } unlock() return singleton } 第三种写法，锁粒度小一点, 有那味道了，但是还是会有多线程的问题，两个线程可以同时进入if singleton == nil, 还是会加锁两次， 并且实例化两次。"/>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
 </head><body><header>
     <nav class="navbar" role="navigation">
         <div class="container">

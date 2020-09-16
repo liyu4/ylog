@@ -25,9 +25,9 @@ redis的lua脚本并不会回滚，如果setnx成功，但是expire失败, 那�
 集群原地裂开「脑裂开」 当master节点和slave节点和sentinel集群处在不同的子网当中，子网突然断开联系，master节点和salve失去联系， sentinel集群从slave中找到一个节点提升为master，那么”系统“中存在两个master，客户端就有可能连接到不同的master 换句话说，不同的客户端可以拿到相同的锁，并发执行，锁失效。
 总结 使用redis作为分布式锁，并发是完美的，极端情况下依然会出现并发执行的情况，这种方案可以作为一种通用的补充，比如可以忍受部分概率的并发。正在要防止并发 还是要靠数据库的防止并发手段，比如开启事务，或者是任务队列。 ">
     <meta property="description" content="My site description" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <link rel="stylesheet" href="/front/bulma.min.css">
     <link rel="canonical" href="/2020/07/redis_distributed_lock/" />
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="/front/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/style.css" />
     <link rel='icon' href='/img/favicon.ico' type='image/x-icon' />
     <meta property="og:title" content="Redis_distributed_lock" />
@@ -80,7 +80,7 @@ redis的lua脚本并不会回滚，如果setnx成功，但是expire失败, 那�
 集群原地裂开「脑裂开」 当master节点和slave节点和sentinel集群处在不同的子网当中，子网突然断开联系，master节点和salve失去联系， sentinel集群从slave中找到一个节点提升为master，那么”系统“中存在两个master，客户端就有可能连接到不同的master 换句话说，不同的客户端可以拿到相同的锁，并发执行，锁失效。
 总结 使用redis作为分布式锁，并发是完美的，极端情况下依然会出现并发执行的情况，这种方案可以作为一种通用的补充，比如可以忍受部分概率的并发。正在要防止并发 还是要靠数据库的防止并发手段，比如开启事务，或者是任务队列。"/>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
 </head><body><header>
     <nav class="navbar" role="navigation">
         <div class="container">

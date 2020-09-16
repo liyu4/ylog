@@ -11,9 +11,9 @@
 mysql&gt; select * from foo; &#43;----&#43;-------------&#43;------&#43; | id | name | year | &#43;----&#43;-------------&#43;------&#43; | 1 | li_lei | 1991 | | 2 | han_mei_mei | 1992 | | 3 | shang_hai | 1993 | &#43;----&#43;-------------&#43;------&#43; 不可重复读 事物1中多次读取同一条数据的结果不一致，称为不可重复读。这里和脏读会有类似的感觉，两者之间的区别是；
  脏读读到的是其他事物未提交的数据 不可重复读读到的是其他事物已经提交的数据  mysql&gt; select * from foo; &#43;----&#43;-------------&#43;------&#43; | id | name | year | &#43;----&#43;-------------&#43;------&#43; | 1 | li_lei | 2000 | | 2 | han_mei_mei | 1992 | | 3 | shang_hai | 1993 | &#43;----&#43;-------------&#43;------&#43; 幻读 幻读，事物1读取到的行数和之前读取到的不一致。 ">
     <meta property="description" content="My site description" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <link rel="stylesheet" href="/front/bulma.min.css">
     <link rel="canonical" href="/2020/06/mysql-isolation-level-introduction/" />
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="/front/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/style.css" />
     <link rel='icon' href='/img/favicon.ico' type='image/x-icon' />
     <meta property="og:title" content="MySQL Isolation Level Introduction" />
@@ -38,7 +38,7 @@ mysql&gt; select * from foo; &#43;----&#43;-------------&#43;------&#43; | id | 
 mysql&gt; select * from foo; &#43;----&#43;-------------&#43;------&#43; | id | name | year | &#43;----&#43;-------------&#43;------&#43; | 1 | li_lei | 1991 | | 2 | han_mei_mei | 1992 | | 3 | shang_hai | 1993 | &#43;----&#43;-------------&#43;------&#43; 不可重复读 事物1中多次读取同一条数据的结果不一致，称为不可重复读。这里和脏读会有类似的感觉，两者之间的区别是；
  脏读读到的是其他事物未提交的数据 不可重复读读到的是其他事物已经提交的数据  mysql&gt; select * from foo; &#43;----&#43;-------------&#43;------&#43; | id | name | year | &#43;----&#43;-------------&#43;------&#43; | 1 | li_lei | 2000 | | 2 | han_mei_mei | 1992 | | 3 | shang_hai | 1993 | &#43;----&#43;-------------&#43;------&#43; 幻读 幻读，事物1读取到的行数和之前读取到的不一致。"/>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
 </head><body><header>
     <nav class="navbar" role="navigation">
         <div class="container">
