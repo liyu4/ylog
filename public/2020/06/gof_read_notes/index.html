@@ -24,7 +24,7 @@ d1 = new concreted1(d1) d1 = new concreted2(d1) d1 = new concreted3(d1) d1 = new
     <link rel="canonical" href="/2020/06/gof_read_notes/" />
     <link rel="stylesheet" href="/front/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/style.css" />
-    <link rel='icon' href='/img/favicon.ico' type='image/x-icon' />
+    <link rel='icon' href='https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg' type='image/x-icon' />
     <meta property="og:title" content="Gof_read_notes" />
 <meta property="og:description" content="设计模式，是一种经验集合，这些经验和经验的实践历经了时间的考验，渐渐变成了可以开箱就用的工具，而学习这些工具的最好办法就是了解它的演变史，并且实践和掌握它的具体用法，但是设计模式不是万能的解药，但是它也是极其极其重要的。
 设计原则（这一点非常重要，你可以忘记设计模式，但是别忘记【原则】  封装变化。 多用组合（composition），少用继承（extend）。 针对接口编程，不针对实现编程。 为了交互对象之间的松耦合设计而做努力。 类应该对扩展开放，对修改关闭。这一点不分语言，理论上都需要这样，好处是新功能的引入不会影响到既有的功能。具体体现就是引入bug会很少，甚至没有。 最少知识原则，只和你的密友谈话。 别找我，我会去找你。我指高级的类，你指低层级的类。 单一原则，一个类应该只有一个引起变化的原因，往往遵循此原则的类，也会高内聚。  模式的目的  可复用 可维护 可扩张  唯有这样，宝贵精力的才不会陷入无穷无尽的修改和奔波当中。
@@ -65,7 +65,7 @@ d1 = new concreted1(d1) d1 = new concreted2(d1) d1 = new concreted3(d1) d1 = new
 比如某一种指定类型的pizza店，当客户下单的时候，才会去调用工厂方法，让其返回给我一个pizza，也就是createpizza（）， 那么所有的子类就是具体的pizza，而延迟实例化，就是当需要的时候才去实例化具体的pizza。
 这样做的好处是什么？ 抽象了创建pizz的过程，任何人都可以开一个pizza店，只要有需要的时候（实例化）。"/>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
+    <script src="/front/jquery-3.5.1.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
 </head><body><header>
     <nav class="navbar" role="navigation">
         <div class="container">
@@ -319,10 +319,6 @@ d1 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> c
         </main><footer class="footer">
     <div class="container">
         <div class="columns has-text-centered">
-            
-            <div class="column is-narrow">
-                <a href="/about" class="">About</a>
-            </div>
             
             <div class="column is-narrow">
                 <a href="/privacy" class="">Privacy</a>

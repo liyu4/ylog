@@ -18,7 +18,7 @@ curl www.baidu.com 执行之后命令行会抓到如下包
     <link rel="canonical" href="/2020/09/using-tcpdump-parse-three-way-handshake/" />
     <link rel="stylesheet" href="/front/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/style.css" />
-    <link rel='icon' href='/img/favicon.ico' type='image/x-icon' />
+    <link rel='icon' href='https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg' type='image/x-icon' />
     <meta property="og:title" content="Using tcpdump parse three way handshake" />
 <meta property="og:description" content="引言 tcp是传输控制控制协议，建立点对点的全双工通信，稳定的通信建立和释放是怎么一个过程？
 三次握手过程 连接示意图
@@ -47,7 +47,7 @@ sudo tcpdump -vv -i en0 -S host www.baidu.com tcpdump: listening on en0, link-ty
 curl www.baidu.com 执行之后命令行会抓到如下包
 22:24:49.613343 IP (tos 0x0, ttl 64, id 0, offset 0, flags [DF], proto TCP (6), length 64) 192.168.1.3.61716 &gt; 104.193.88.77.http: Flags [S], cksum 0x4d64 (correct), seq 2412988450, win 65535, options [mss 1460,nop,wscale 6,nop,nop,TS val 1440303018 ecr 0,sackOK,eol], length 0 22:24:50."/>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
+    <script src="/front/jquery-3.5.1.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
 </head><body><header>
     <nav class="navbar" role="navigation">
         <div class="container">
@@ -261,10 +261,6 @@ tcpdump: listening on en0, link-type EN10MB (Ethernet), capture size 262144 byte
         </main><footer class="footer">
     <div class="container">
         <div class="columns has-text-centered">
-            
-            <div class="column is-narrow">
-                <a href="/about" class="">About</a>
-            </div>
             
             <div class="column is-narrow">
                 <a href="/privacy" class="">Privacy</a>

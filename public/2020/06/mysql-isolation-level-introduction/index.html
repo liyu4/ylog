@@ -15,7 +15,7 @@ mysql&gt; select * from foo; &#43;----&#43;-------------&#43;------&#43; | id | 
     <link rel="canonical" href="/2020/06/mysql-isolation-level-introduction/" />
     <link rel="stylesheet" href="/front/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/style.css" />
-    <link rel='icon' href='/img/favicon.ico' type='image/x-icon' />
+    <link rel='icon' href='https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg' type='image/x-icon' />
     <meta property="og:title" content="MySQL Isolation Level Introduction" />
 <meta property="og:description" content="事物的隔离级别 当对数据库的操作是并发的，多个事物互相交叉运行，可能会出现不同的事物，对同一个数据进行读写操作，极大的概率会破坏预期。mysql的innodb存储引擎提出了四种隔离级别；
  读未提交 （read uncommitted） 读提交 （read committed） 可重复读 （read repeated） 串行化 （serializable）  隔离级别定义了事物之间相互影响的关系，比如最严格的串行化，意味着两个事物对同一批数据进行操作，只能是其中一个事物执行，另外的事物“排队”等待，当前面的事物执行完毕，才能执行，这就说明了，事物之间不会存在影响， 其他的三种隔离级别都不满足严格的【事物】定义。
@@ -38,7 +38,7 @@ mysql&gt; select * from foo; &#43;----&#43;-------------&#43;------&#43; | id | 
 mysql&gt; select * from foo; &#43;----&#43;-------------&#43;------&#43; | id | name | year | &#43;----&#43;-------------&#43;------&#43; | 1 | li_lei | 1991 | | 2 | han_mei_mei | 1992 | | 3 | shang_hai | 1993 | &#43;----&#43;-------------&#43;------&#43; 不可重复读 事物1中多次读取同一条数据的结果不一致，称为不可重复读。这里和脏读会有类似的感觉，两者之间的区别是；
  脏读读到的是其他事物未提交的数据 不可重复读读到的是其他事物已经提交的数据  mysql&gt; select * from foo; &#43;----&#43;-------------&#43;------&#43; | id | name | year | &#43;----&#43;-------------&#43;------&#43; | 1 | li_lei | 2000 | | 2 | han_mei_mei | 1992 | | 3 | shang_hai | 1993 | &#43;----&#43;-------------&#43;------&#43; 幻读 幻读，事物1读取到的行数和之前读取到的不一致。"/>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
+    <script src="/front/jquery-3.5.1.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
 </head><body><header>
     <nav class="navbar" role="navigation">
         <div class="container">
@@ -217,10 +217,6 @@ mysql<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">select<
         </main><footer class="footer">
     <div class="container">
         <div class="columns has-text-centered">
-            
-            <div class="column is-narrow">
-                <a href="/about" class="">About</a>
-            </div>
             
             <div class="column is-narrow">
                 <a href="/privacy" class="">Privacy</a>

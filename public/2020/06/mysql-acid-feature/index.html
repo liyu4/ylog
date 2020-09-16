@@ -24,7 +24,7 @@ buffer pool的引入，大大提高了读写数据库的效率，但是也带来
     <link rel="canonical" href="/2020/06/mysql-acid-feature/" />
     <link rel="stylesheet" href="/front/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/style.css" />
-    <link rel='icon' href='/img/favicon.ico' type='image/x-icon' />
+    <link rel='icon' href='https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg' type='image/x-icon' />
     <meta property="og:title" content="MySQL Acid Feature" />
 <meta property="og:description" content="事物【transaction】 数据库事物（简称：事物）是数据库管理系统（DBMS）的一个逻辑执行单元，由一个有限的数据库操作序列构成。
 数据库一般包含了一个序列的对read/write的操作，包含以下两个目的：
@@ -65,7 +65,7 @@ innodb作为MySQL的存储引擎，数据是存放在磁盘上，如果每次读
 buffer pool的引入，大大提高了读写数据库的效率，但是也带来了新的问题； 如果数据库宕机，而此时buffer pool中的数据未刷到磁盘中，就会造成数据丢失，数据库事物的持久性就无法保证。
 于是，引入redo log来解决这个问题； 当数据库修改之后，除了修改buffer pool，还会将操作变更记录在redo log中，当事物提交的时候，会调用fsync将redo log刷到磁盘中，即使，数据库宕机，之后数据库重启之后，会再次读取redo log重做相关操作。redo log 采取的是【write-ahead logging】，所有对数据库的修改先写入redo log，再写入到buffer pool中，由此来保证即使数据库宕机，也能保证数据的一致性。"/>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
+    <script src="/front/jquery-3.5.1.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
 </head><body><header>
     <nav class="navbar" role="navigation">
         <div class="container">
@@ -256,10 +256,6 @@ buffer pool的引入，大大提高了读写数据库的效率，但是也带来
         </main><footer class="footer">
     <div class="container">
         <div class="columns has-text-centered">
-            
-            <div class="column is-narrow">
-                <a href="/about" class="">About</a>
-            </div>
             
             <div class="column is-narrow">
                 <a href="/privacy" class="">Privacy</a>

@@ -30,9 +30,6 @@ images = [ "/img/author_image.jpg" ]
     url = "https://twitter.com/liyu7771"
     pre = "<i class='fab fa-twitter'></i>"
 
-[[menu.footer]]
-  name = "About"
-  url = "/about"
 
 [[menu.footer]]
   name = "Privacy"

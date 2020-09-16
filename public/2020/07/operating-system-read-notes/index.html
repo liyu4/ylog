@@ -19,7 +19,7 @@
     <link rel="canonical" href="/2020/07/operating-system-read-notes/" />
     <link rel="stylesheet" href="/front/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/style.css" />
-    <link rel='icon' href='/img/favicon.ico' type='image/x-icon' />
+    <link rel='icon' href='https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg' type='image/x-icon' />
     <meta property="og:title" content="Operating system read notes" />
 <meta property="og:description" content="我总有很多问题，这些问题在不解决之前，总有一天他们会相遇在同一个地方，然后成为一个「大麻烦」，最近看「章老师说」，真正的SE「soft engineer」从30岁开始都算晚。所以我将读操作系统的一些要点记录下来，里面也许会回答一些我们在使用电脑过程中遇到的常见的问题。另外此书也不是一蹴而就，需要经常翻阅。notes的记录线会跟随章节来走。
 基础原理 为什么要学操作系统
@@ -50,7 +50,7 @@
  sosc 「single operation single console」 单人单控制 批处理系统 多道系统 分时系统 实时系统 商业系统/个人系统/服务器系统  实际的历程比这个要复杂，这几个历程是总体是比较关键点节点，这样符合人的直觉和持续迭代的事实。比如一开始的计算机是只能一个人控制，并且由复杂的装载程序和打印程序，那个时代计算机非常的昂贵，这种资源的浪费是非常不值得，批处理系统就是可以一次性再装载完整个程序之后可以一次执行，但是人是多线程的，我们自然想计算机是否可以同时执行多个程序，这就是多道技术的出现原因，在单核时代本质上还是执行一个程序，只是感觉上执行了多个程序。但是这种方式只解决了多个程序同时执行的问题，人们有想，我是否可以多个人，在不同的时间「提前预定的时间」也能执行我自己的程序，这就是分时系统的出现「我们现在使用的多数都是分时系统」，real time系统主要是用在特定的场合，它实时的含义是，在可预测的时间之内完成计算，不然就失去了计算的意义，打个不好的比方，比如我使用滴滴打车去赶火车，如果滴滴告诉我需要30min才能到达目的地，但是这样我可能就迟到了，那我使用滴滴还有什么意义呢？ 当然假如我的预期是20min之内，那么只要有系统能做到，那么它就是我认为的实时的，这也就是说计算机的定义是相对的，不是绝对的，它的本质依然是管理有限资源的使用并且保证它们的效率和安全。
 操作系统的基本概念  总线，各种设备挂载在总线上面 硬件指令流水线 指令存储单元，寄存器&ndash;》缓存&ndash;》内存&ndash;》磁盘&ndash;》磁带，执行时间1nsec&mdash;》2nsec&ndash;》10nsec&ndash;》10msec&ndash;》100sec 用户态和内核态，区分这两个态在于cpu中的状态位，内核态具有对底层资源访问的最高权限，用户态相对来说掌握的资源有限，另外用户态也可以转换成内核态，反之亦然，但是这种切换代价是很大的。 操作系统的结构，早起是网络结构，容易造成循环调用和死锁，后期发展成模块化和分层。 微内核，为了应对内核代码过多提出的概念，也就是内核的内核才放在内核态中。 进程，内存，文件 系统调用，入c语言的resutl = read(fd, buffer, nbytes), 最终会调用内核中的read函数，并且返回结果。 系统调用的参数通过压栈的方式推进，但是这也不全是，也有系统是通过寄存器来传递，如上，我们知道寄存器的速度快于内存。 没有编程语言咋办，操作系统提供一个壳，最常见的就是shell或者powershell。 系统调用如何执行，fork并且execave 进程的出现是人们对并发的渴望，进程模型也是计算机对cpu控制的体现。  进程（process）  一个程序加载到内存后就变为进程，即； 进程=程序&#43;执行  进程模型  物理上，同一时刻，cpu只能执行一条命令，所以所有进程共用一个程序计数器 逻辑上，每个进程都觉得自己的执行，但是实际是有的进程在等待io而让出cpu控制权，所以这就需要每个进程记住自己的执行的位置，这样计数器就有多个了。 进程是程序需要分配在物理内存之上，但是资源是有限的，多个进程之间如何解决内存竞争问题？ 进程需要调度，也就是谁可以执行的问题？  进程模型的好处  提高cpu的使用效率 计算方式，假设一个程序20%的时间使用cpu，80%的时间在进行I/O，那么cpu的使用率只有20%。 1-80% = 20%。 如果是两个这样的程序呢，只有两边都在进行IO操作，cpu才被浪费，也就是 1- 80%*80% = 36%的利用率。 我们称同时执行的程序个数为度，系统cpu的利用率会随着度的提高而提高，但是后面甚至不会提高，还会下降，因为系统之间的切换将消耗大量的资源。 影响时间改善  进程的产生和消亡 产生"/>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
+    <script src="/front/jquery-3.5.1.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
 </head><body><header>
     <nav class="navbar" role="navigation">
         <div class="container">
@@ -637,10 +637,6 @@ lock(x)
         </main><footer class="footer">
     <div class="container">
         <div class="columns has-text-centered">
-            
-            <div class="column is-narrow">
-                <a href="/about" class="">About</a>
-            </div>
             
             <div class="column is-narrow">
                 <a href="/privacy" class="">Privacy</a>

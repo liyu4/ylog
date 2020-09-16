@@ -19,7 +19,7 @@ type Singleton struct { } var singleton *Singleton func GetSingleton() *Singleto
     <link rel="canonical" href="/2020/09/%E5%89%91%E6%8C%87offer%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" />
     <link rel="stylesheet" href="/front/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/style.css" />
-    <link rel='icon' href='/img/favicon.ico' type='image/x-icon' />
+    <link rel='icon' href='https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg' type='image/x-icon' />
     <meta property="og:title" content="剑指offer读书笔记" />
 <meta property="og:description" content="引言 剑指offer这本书，听过很多但是一直没有机会去阅读，今日在kindle上下单买了这本书，粗看了前面的几十页之后，觉得开心和兴奋。 书中的内容并不是新的，可以认为是再加工，再发现，再凝练，里面的题目也不仅仅是题目，而是对人一些思考方式的梳理和建议，总而言之 这是一本用心的佳作，哪怕是只看懂其三分之二 ，也依然是大有益处。
 数据结构，有适用于内存的，也有适用于磁盘，软盘的，或者两者兼有。挑选合适的数据结构，比如，数组，链表，队列，栈，树，图，哈希表等 将解题思路换成数据结构的表达方式。有趣的地方在于，一种题型可能有多种解法，效率和方式可能都会不同，选择效率最高，内存消耗最低的， 使我们的追求，这也是有意思的地方。
@@ -50,7 +50,7 @@ go
 type Singleton struct { } var singleton *Singleton func GetSingleton() *Singleton s{ if singleton == nil { singleton = new(single) } return singleton } 第二种写法，加锁，确定只有一个线程可以实例化singleton, 新的问题是，锁粒度太大
 type Singleton struct { } var singleton *Singleton func GetSingleton() *Singleton { lock() if singleton == nil { singleton = new(single) } unlock() return singleton } 第三种写法，锁粒度小一点, 有那味道了，但是还是会有多线程的问题，两个线程可以同时进入if singleton == nil, 还是会加锁两次， 并且实例化两次。"/>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
+    <script src="/front/jquery-3.5.1.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
 </head><body><header>
     <nav class="navbar" role="navigation">
         <div class="container">
@@ -271,10 +271,6 @@ func InitSingleton() {
         </main><footer class="footer">
     <div class="container">
         <div class="columns has-text-centered">
-            
-            <div class="column is-narrow">
-                <a href="/about" class="">About</a>
-            </div>
             
             <div class="column is-narrow">
                 <a href="/privacy" class="">Privacy</a>

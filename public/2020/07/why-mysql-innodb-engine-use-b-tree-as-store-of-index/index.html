@@ -25,7 +25,7 @@ links: https://baike.baidu.com/item/AVL%E6%A0%91/10986648?fr=aladdinss ">
     <link rel="canonical" href="/2020/07/why-mysql-innodb-engine-use-b-tree-as-store-of-index/" />
     <link rel="stylesheet" href="/front/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/style.css" />
-    <link rel='icon' href='/img/favicon.ico' type='image/x-icon' />
+    <link rel='icon' href='https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg' type='image/x-icon' />
     <meta property="og:title" content="Why MySQL Innodb engine use b&#43; tree as store of index" />
 <meta property="og:description" content="背景 这个问题是一个高频的面试问题，DBMS的数据库有一个要求，保持数据的持久性，那么放在内存中，由于内存掉电「断电」之后数据会丢失，且内存的价格很贵，所以mysql会选择磁盘「当然也可以不限制与此」作为数据持久化的存储方案。
 优势如下 1： 容量大价格便宜，TB甚至PB级别「PB=1024tTB，TB=1024G」 2： 持久性，磁盘的数据不易丢失「物理的损坏除外」 3： 容易制造
@@ -68,7 +68,7 @@ b树 为什么要发明b树。 b树是多路平衡查找树，相对于avl或者
 b&#43;树 b&#43;树是b树的改进，非叶子节点存的是索引，真实的数据存在叶子节点当中，这就意味着，假设m阶= 1000，那么只需要树高为3就可以存1000000000个索引，而I/O却非常少。 并且b&#43;树也是有序的，对于范围查找来说，可以利用局部性原理（local of reference）， 经常访问的数据可以更好的load to memory， 加快查询的速度。 总结而言，b&#43;树是为现代磁盘而生的一种数据结构，通过压缩树的高度，获得更少的I/O, 通过索引和数据分离，存储更多的索引，更好应对大表的查询。数据通过双向链表连接在一起。
 links: https://baike.baidu.com/item/AVL%E6%A0%91/10986648?fr=aladdinss"/>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
+    <script src="/front/jquery-3.5.1.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
 </head><body><header>
     <nav class="navbar" role="navigation">
         <div class="container">
@@ -211,10 +211,6 @@ links: https://baike.baidu.com/item/AVL%E6%A0%91/10986648?fr=aladdinss"/>
         </main><footer class="footer">
     <div class="container">
         <div class="columns has-text-centered">
-            
-            <div class="column is-narrow">
-                <a href="/about" class="">About</a>
-            </div>
             
             <div class="column is-narrow">
                 <a href="/privacy" class="">Privacy</a>
