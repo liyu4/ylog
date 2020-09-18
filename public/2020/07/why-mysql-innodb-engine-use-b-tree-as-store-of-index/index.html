@@ -4,6 +4,7 @@
     <meta charset="utf-8">
      
     <meta name="viewport" content="with=device-width, initial-scale=1, viewport-fit=cover">
+    
     <title>Why MySQL Innodb engine use b&#43; tree as store of index | 自由.自在</title>
     <meta name="description" content="背景 这个问题是一个高频的面试问题，DBMS的数据库有一个要求，保持数据的持久性，那么放在内存中，由于内存掉电「断电」之后数据会丢失，且内存的价格很贵，所以mysql会选择磁盘「当然也可以不限制与此」作为数据持久化的存储方案。
 优势如下 1： 容量大价格便宜，TB甚至PB级别「PB=1024tTB，TB=1024G」 2： 持久性，磁盘的数据不易丢失「物理的损坏除外」 3： 容易制造

@@ -6,10 +6,19 @@
     <description>Recent content in Blogs on 自由.自在</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 14 Sep 2020 16:47:51 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 17 Sep 2020 11:10:28 +0800</lastBuildDate>
     
 	<atom:link href="/blog/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>IO Model</title>
+      <link>/2020/09/io-model/</link>
+      <pubDate>Thu, 17 Sep 2020 11:10:28 +0800</pubDate>
+      
+      <guid>/2020/09/io-model/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>从一到无穷大</title>

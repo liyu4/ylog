@@ -4,6 +4,7 @@
     <meta charset="utf-8">
      
     <meta name="viewport" content="with=device-width, initial-scale=1, viewport-fit=cover">
+    
     <title>Redis_distributed_lock | 自由.自在</title>
     <meta name="description" content="典型场景 如果，我们要确定一个数据存在系统中，然后才对其做更新操作，那么再并发的情况下，很容易碰到多线程交替运行情况。这是因为两个线程之间对这代码的执行不是隔离的，或者这两个操作不是原子性。 这里不要跟数据库的原子性搞搞混。单机环境下可以靠锁来解决这个问题，在分布式环境中，单机的锁失效，这个时候保证数据一致性就要依靠分布式锁来实现。
 redis分布式锁 分布式锁主要使用redis的setNX command来实现。
