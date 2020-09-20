@@ -6,7 +6,15 @@
     <meta name="viewport" content="with=device-width, initial-scale=1, viewport-fit=cover">
     
     <title>IO Model | 自由.自在</title>
-    <meta name="description" content="不再是少年 ">
+    <meta name="description" content="引言 常听到一句话，计算机的性能不是在计算而是在IO, 这个广义的IO有时候指的是网络IO,磁盘IO,内存IO, 这些名词背后都有一个共同的词就是IO, IO并不难理解，英文原文是「INPUT/OUTPUT」翻译成中文也就是 输入、输出。
+阻塞IO(BIO) server提供accept功能，每一个client可以连接到server，server端要读取每一个client的数据， 假设此时此刻有很多个client已经和server建立了连接，server端对每一个client都起一个thread， 每一个thread都处理一个client，blocking在那边，等待和client的交互。对于任意单个client来说， 这就是一个阻塞的操作。
+优势
+ 每一个连接都起一个thread对应 可以对应很多的连接  劣势
+ 线程内存浪费 频繁的线程切换浪费系统资源  非阻塞IO(NIO) 阻塞IO的问题是，开启了太多的线程，多线程的切换，NIO的核心是，server端去client获取数据，如果 client没有数据，则返回-1, 这样程序可以继续往下执行，如果是多个client，则将client放入一个链表 当中，然后for{}该链表，有数据就处理数据，没有数据也不阻塞。但是这就会引入一个新的问题。
+优势
+ 单线程  劣势
+ 循环，可能会出现大部分client都无效，但是部分client有效，那么轮训的时候，大部分的时候在做 无用功 但是系统从用户空间陷入内核空间这部分开销非常大。  多路复用器 （select poll epoll kqueue） 非阻塞IO的问题是，如果clients链表的数量非常大，但是其中99%的链接是失效的，系统的多数工作都在做 无用的操作，所以就提出了多路复用器的概念，非常好理解，就是不需要再for{}循环的时候，去检查client 是否有效和数据，而是在内核简历一个任务，将所有的client去遍历一遍 ，如果有事件「消息或者是其他」则 单独起一个数据结构「称之为记事本」，记录下这些消息，这样，上层的server每次就直接来内核的记事本查找 是否有client发来了消息，如果有，则server再去内核中读取这部分的IO操作，这样的话，无事件的client 在kernel层就被屏蔽掉了，这样就极大的提高了非阻塞IO的效率。
+Go里面使用了什么IO模型 Golang里面使用的是epoll模式 ">
     <meta property="description" content="My site description" />
     <link rel="stylesheet" href="/front/bulma.min.css">
     <link rel="canonical" href="/2020/09/io-model/" />
@@ -14,7 +22,15 @@
     <link rel="stylesheet" href="/css/style.css" />
     <link rel='icon' href='https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg' type='image/x-icon' />
     <meta property="og:title" content="IO Model" />
-<meta property="og:description" content="" />
+<meta property="og:description" content="引言 常听到一句话，计算机的性能不是在计算而是在IO, 这个广义的IO有时候指的是网络IO,磁盘IO,内存IO, 这些名词背后都有一个共同的词就是IO, IO并不难理解，英文原文是「INPUT/OUTPUT」翻译成中文也就是 输入、输出。
+阻塞IO(BIO) server提供accept功能，每一个client可以连接到server，server端要读取每一个client的数据， 假设此时此刻有很多个client已经和server建立了连接，server端对每一个client都起一个thread， 每一个thread都处理一个client，blocking在那边，等待和client的交互。对于任意单个client来说， 这就是一个阻塞的操作。
+优势
+ 每一个连接都起一个thread对应 可以对应很多的连接  劣势
+ 线程内存浪费 频繁的线程切换浪费系统资源  非阻塞IO(NIO) 阻塞IO的问题是，开启了太多的线程，多线程的切换，NIO的核心是，server端去client获取数据，如果 client没有数据，则返回-1, 这样程序可以继续往下执行，如果是多个client，则将client放入一个链表 当中，然后for{}该链表，有数据就处理数据，没有数据也不阻塞。但是这就会引入一个新的问题。
+优势
+ 单线程  劣势
+ 循环，可能会出现大部分client都无效，但是部分client有效，那么轮训的时候，大部分的时候在做 无用功 但是系统从用户空间陷入内核空间这部分开销非常大。  多路复用器 （select poll epoll kqueue） 非阻塞IO的问题是，如果clients链表的数量非常大，但是其中99%的链接是失效的，系统的多数工作都在做 无用的操作，所以就提出了多路复用器的概念，非常好理解，就是不需要再for{}循环的时候，去检查client 是否有效和数据，而是在内核简历一个任务，将所有的client去遍历一遍 ，如果有事件「消息或者是其他」则 单独起一个数据结构「称之为记事本」，记录下这些消息，这样，上层的server每次就直接来内核的记事本查找 是否有client发来了消息，如果有，则server再去内核中读取这部分的IO操作，这样的话，无事件的client 在kernel层就被屏蔽掉了，这样就极大的提高了非阻塞IO的效率。
+Go里面使用了什么IO模型 Golang里面使用的是epoll模式" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/2020/09/io-model/" />
 <meta property="og:image" content="https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg"/>
@@ -25,7 +41,15 @@
 <meta name="twitter:image" content="https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg"/>
 
 <meta name="twitter:title" content="IO Model"/>
-<meta name="twitter:description" content=""/>
+<meta name="twitter:description" content="引言 常听到一句话，计算机的性能不是在计算而是在IO, 这个广义的IO有时候指的是网络IO,磁盘IO,内存IO, 这些名词背后都有一个共同的词就是IO, IO并不难理解，英文原文是「INPUT/OUTPUT」翻译成中文也就是 输入、输出。
+阻塞IO(BIO) server提供accept功能，每一个client可以连接到server，server端要读取每一个client的数据， 假设此时此刻有很多个client已经和server建立了连接，server端对每一个client都起一个thread， 每一个thread都处理一个client，blocking在那边，等待和client的交互。对于任意单个client来说， 这就是一个阻塞的操作。
+优势
+ 每一个连接都起一个thread对应 可以对应很多的连接  劣势
+ 线程内存浪费 频繁的线程切换浪费系统资源  非阻塞IO(NIO) 阻塞IO的问题是，开启了太多的线程，多线程的切换，NIO的核心是，server端去client获取数据，如果 client没有数据，则返回-1, 这样程序可以继续往下执行，如果是多个client，则将client放入一个链表 当中，然后for{}该链表，有数据就处理数据，没有数据也不阻塞。但是这就会引入一个新的问题。
+优势
+ 单线程  劣势
+ 循环，可能会出现大部分client都无效，但是部分client有效，那么轮训的时候，大部分的时候在做 无用功 但是系统从用户空间陷入内核空间这部分开销非常大。  多路复用器 （select poll epoll kqueue） 非阻塞IO的问题是，如果clients链表的数量非常大，但是其中99%的链接是失效的，系统的多数工作都在做 无用的操作，所以就提出了多路复用器的概念，非常好理解，就是不需要再for{}循环的时候，去检查client 是否有效和数据，而是在内核简历一个任务，将所有的client去遍历一遍 ，如果有事件「消息或者是其他」则 单独起一个数据结构「称之为记事本」，记录下这些消息，这样，上层的server每次就直接来内核的记事本查找 是否有client发来了消息，如果有，则server再去内核中读取这部分的IO操作，这样的话，无事件的client 在kernel层就被屏蔽掉了，这样就极大的提高了非阻塞IO的效率。
+Go里面使用了什么IO模型 Golang里面使用的是epoll模式"/>
 
     <script src="/front/jquery-3.5.1.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
 </head><body><header>
@@ -99,12 +123,53 @@
                     <div class="column">
                         <p>杨修</p>
                         <p><time>September 17, 2020</time> |
-                            0  minutes </p>
+                            1  minute </p>
                     </div>
                 </div>
 
             <div class="content">
-            
+            <h1 id="引言">引言</h1>
+<p>常听到一句话，计算机的性能不是在计算而是在IO, 这个广义的IO有时候指的是网络IO,磁盘IO,内存IO,
+这些名词背后都有一个共同的词就是IO, IO并不难理解，英文原文是「INPUT/OUTPUT」翻译成中文也就是
+输入、输出。</p>
+<h1 id="阻塞iobio">阻塞IO(BIO)</h1>
+<p>server提供accept功能，每一个client可以连接到server，server端要读取每一个client的数据，
+假设此时此刻有很多个client已经和server建立了连接，server端对每一个client都起一个thread，
+每一个thread都处理一个client，blocking在那边，等待和client的交互。对于任意单个client来说，
+这就是一个阻塞的操作。</p>
+<p>优势</p>
+<ul>
+<li>每一个连接都起一个thread对应</li>
+<li>可以对应很多的连接</li>
+</ul>
+<p>劣势</p>
+<ul>
+<li>线程内存浪费</li>
+<li>频繁的线程切换浪费系统资源</li>
+</ul>
+<h1 id="非阻塞ionio">非阻塞IO(NIO)</h1>
+<p>阻塞IO的问题是，开启了太多的线程，多线程的切换，NIO的核心是，server端去client获取数据，如果
+client没有数据，则返回-1, 这样程序可以继续往下执行，如果是多个client，则将client放入一个链表
+当中，然后for{}该链表，有数据就处理数据，没有数据也不阻塞。但是这就会引入一个新的问题。</p>
+<p>优势</p>
+<ul>
+<li>单线程</li>
+</ul>
+<p>劣势</p>
+<ul>
+<li>循环，可能会出现大部分client都无效，但是部分client有效，那么轮训的时候，大部分的时候在做 无用功
+但是系统从用户空间陷入内核空间这部分开销非常大。</li>
+</ul>
+<h1 id="多路复用器-select-poll-epoll-kqueue">多路复用器 （select poll epoll kqueue）</h1>
+<p>非阻塞IO的问题是，如果clients链表的数量非常大，但是其中99%的链接是失效的，系统的多数工作都在做
+无用的操作，所以就提出了多路复用器的概念，非常好理解，就是不需要再for{}循环的时候，去检查client
+是否有效和数据，而是在内核简历一个任务，将所有的client去遍历一遍 ，如果有事件「消息或者是其他」则
+单独起一个数据结构「称之为记事本」，记录下这些消息，这样，上层的server每次就直接来内核的记事本查找
+是否有client发来了消息，如果有，则server再去内核中读取这部分的IO操作，这样的话，无事件的client
+在kernel层就被屏蔽掉了，这样就极大的提高了非阻塞IO的效率。</p>
+<h1 id="go里面使用了什么io模型">Go里面使用了什么IO模型</h1>
+<p>Golang里面使用的是epoll模式</p>
+
             </div>
             </div>
         </div>

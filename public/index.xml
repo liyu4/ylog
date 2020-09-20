@@ -17,7 +17,15 @@
       <pubDate>Thu, 17 Sep 2020 11:10:28 +0800</pubDate>
       
       <guid>/2020/09/io-model/</guid>
-      <description></description>
+      <description>引言 常听到一句话，计算机的性能不是在计算而是在IO, 这个广义的IO有时候指的是网络IO,磁盘IO,内存IO, 这些名词背后都有一个共同的词就是IO, IO并不难理解，英文原文是「INPUT/OUTPUT」翻译成中文也就是 输入、输出。
+阻塞IO(BIO) server提供accept功能，每一个client可以连接到server，server端要读取每一个client的数据， 假设此时此刻有很多个client已经和server建立了连接，server端对每一个client都起一个thread， 每一个thread都处理一个client，blocking在那边，等待和client的交互。对于任意单个client来说， 这就是一个阻塞的操作。
+优势
+ 每一个连接都起一个thread对应 可以对应很多的连接  劣势
+ 线程内存浪费 频繁的线程切换浪费系统资源  非阻塞IO(NIO) 阻塞IO的问题是，开启了太多的线程，多线程的切换，NIO的核心是，server端去client获取数据，如果 client没有数据，则返回-1, 这样程序可以继续往下执行，如果是多个client，则将client放入一个链表 当中，然后for{}该链表，有数据就处理数据，没有数据也不阻塞。但是这就会引入一个新的问题。
+优势
+ 单线程  劣势
+ 循环，可能会出现大部分client都无效，但是部分client有效，那么轮训的时候，大部分的时候在做 无用功 但是系统从用户空间陷入内核空间这部分开销非常大。  多路复用器 （select poll epoll kqueue） 非阻塞IO的问题是，如果clients链表的数量非常大，但是其中99%的链接是失效的，系统的多数工作都在做 无用的操作，所以就提出了多路复用器的概念，非常好理解，就是不需要再for{}循环的时候，去检查client 是否有效和数据，而是在内核简历一个任务，将所有的client去遍历一遍 ，如果有事件「消息或者是其他」则 单独起一个数据结构「称之为记事本」，记录下这些消息，这样，上层的server每次就直接来内核的记事本查找 是否有client发来了消息，如果有，则server再去内核中读取这部分的IO操作，这样的话，无事件的client 在kernel层就被屏蔽掉了，这样就极大的提高了非阻塞IO的效率。
+Go里面使用了什么IO模型 Golang里面使用的是epoll模式</description>
     </item>
     
     <item>
