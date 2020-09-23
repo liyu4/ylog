@@ -96,8 +96,28 @@
           每天一遍，快乐无限
         </div>
 
+        <script type="text/javascript">
+            
+        
+        $(function(){
+            changeWH();
+        });
+ 
+    function changeWH(){
+ 
+        $("#myiframe").height($(document).height());
+        $("#myiframe").width($(document).width());
+    }
+ 
+    window.οnresize=function(){  
+         changeWH();  
+ 
+    } 
+</script>
 
-        <iframe width="600" height="400" src="https://m.bilibili.com/video/BV1r741127eC">
+
+
+        <iframe  src="https://m.bilibili.com/video/BV1r741127eC" id="myiframe"  frameborder="0">
         </iframe>
 
     </div>
