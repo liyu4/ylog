@@ -12,12 +12,21 @@
     
     
     <item>
-      <title>DFS&#43;BFS</title>
-      <link>/2020/10/dfs-bfs/</link>
+      <title>Dijkstr Shortest Path</title>
+      <link>/2020/10/dijkstr-shortest-path/</link>
+      <pubDate>Tue, 20 Oct 2020 14:26:24 +0800</pubDate>
+      
+      <guid>/2020/10/dijkstr-shortest-path/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>DFS and BFS</title>
+      <link>/2020/10/dfs-and-bfs/</link>
       <pubDate>Tue, 20 Oct 2020 10:46:55 +0800</pubDate>
       
-      <guid>/2020/10/dfs-bfs/</guid>
-      <description></description>
+      <guid>/2020/10/dfs-and-bfs/</guid>
+      <description>人际关系就像是一张网，连接着你和我。用过QQ的朋友应该遇到过这样的场景，系统会自动的推荐一些好友给你， 这些好友里面，可能是你认识的，也可能是不认识的。那QQ是怎么做这件事的呢？</description>
     </item>
     
     <item>
