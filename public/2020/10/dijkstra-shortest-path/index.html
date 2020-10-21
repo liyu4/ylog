@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en-us"><head>
+    
+    <meta charset="utf-8">
+     
+    <meta name="viewport" content="with=device-width, initial-scale=1, viewport-fit=cover">
+    
+    <title>Dijkstra Shortest Path | 自由.自在</title>
+    <meta name="description" content="前言 图论中有两种图，一种是有向图一种是无向图，比如微博，我关注了大V, 大V可能不关注我，这两者之间的关系是有向的。 微信中添加了一个好友，那么两个人都是朋友关系，这两者的关系是最简单的无向图。
+还有一种图是加权图，图的顶点之间的边带有权重，比方说可以时间，可以是距离等物理特性。 其中一个经典的算法就是求图中某一个顶点到另外一个顶点的最短距离。这其中比较有名的算法是dijkstra shortest path。
+算法推导 由于我家在十八线小县城，自上海出发，选择火车出行没有直达的车次，所以选择一个出行距离最近的方案是符合直觉的方案「花费的钱，还有时间，这些暂时不考虑」
+
+   上海 杭州 丽水 武汉 南昌 永修      150KM 无法直接到达 600KM 500KM 无法直接到达    从图中可以看出，从上海出发，可以直接到达杭州，武汉，南昌，其距离分别为150KM, 600KM, 500KM, 因为离杭州最近， 所以选取其为下一个出发顶点「出发城市」
+   上海 杭州 丽水 武汉 南昌 永修      150KM 350KM 600KM 500KM 无法直接到达    杭州的下一个节点是丽水，所以上海从杭州出发到丽水的距离是350KN, 并且下一个顶点是丽水
+   上海 杭州 丽水 武汉 南昌 永修      150KM 350KM 600KM 500KM 无法直接到达    丽水距离武汉400KM, 所以上海到杭州到丽水到武汉这一条线路是350KM&#43;400KM = 750KM, 这大于上海直接出发到达的线路，所以上海到武汉不更新。下一个顶点武汉。 ">
+    <meta property="description" content="My site description" />
+    <link rel="stylesheet" href="/front/bulma.min.css">
+    <link rel="canonical" href="/2020/10/dijkstra-shortest-path/" />
+    <link rel="stylesheet" href="/front/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel='icon' href='https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg' type='image/x-icon' />
+    <meta property="og:title" content="Dijkstra Shortest Path" />
+<meta property="og:description" content="前言 图论中有两种图，一种是有向图一种是无向图，比如微博，我关注了大V, 大V可能不关注我，这两者之间的关系是有向的。 微信中添加了一个好友，那么两个人都是朋友关系，这两者的关系是最简单的无向图。
+还有一种图是加权图，图的顶点之间的边带有权重，比方说可以时间，可以是距离等物理特性。 其中一个经典的算法就是求图中某一个顶点到另外一个顶点的最短距离。这其中比较有名的算法是dijkstra shortest path。
+算法推导 由于我家在十八线小县城，自上海出发，选择火车出行没有直达的车次，所以选择一个出行距离最近的方案是符合直觉的方案「花费的钱，还有时间，这些暂时不考虑」
+
+   上海 杭州 丽水 武汉 南昌 永修      150KM 无法直接到达 600KM 500KM 无法直接到达    从图中可以看出，从上海出发，可以直接到达杭州，武汉，南昌，其距离分别为150KM, 600KM, 500KM, 因为离杭州最近， 所以选取其为下一个出发顶点「出发城市」
+   上海 杭州 丽水 武汉 南昌 永修      150KM 350KM 600KM 500KM 无法直接到达    杭州的下一个节点是丽水，所以上海从杭州出发到丽水的距离是350KN, 并且下一个顶点是丽水
+   上海 杭州 丽水 武汉 南昌 永修      150KM 350KM 600KM 500KM 无法直接到达    丽水距离武汉400KM, 所以上海到杭州到丽水到武汉这一条线路是350KM&#43;400KM = 750KM, 这大于上海直接出发到达的线路，所以上海到武汉不更新。下一个顶点武汉。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/2020/10/dijkstra-shortest-path/" />
+<meta property="og:image" content="https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg"/>
+<meta property="article:published_time" content="2020-10-20T14:26:24+08:00" />
+<meta property="article:modified_time" content="2020-10-20T14:26:24+08:00" />
+
+    <meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg"/>
+
+<meta name="twitter:title" content="Dijkstra Shortest Path"/>
+<meta name="twitter:description" content="前言 图论中有两种图，一种是有向图一种是无向图，比如微博，我关注了大V, 大V可能不关注我，这两者之间的关系是有向的。 微信中添加了一个好友，那么两个人都是朋友关系，这两者的关系是最简单的无向图。
+还有一种图是加权图，图的顶点之间的边带有权重，比方说可以时间，可以是距离等物理特性。 其中一个经典的算法就是求图中某一个顶点到另外一个顶点的最短距离。这其中比较有名的算法是dijkstra shortest path。
+算法推导 由于我家在十八线小县城，自上海出发，选择火车出行没有直达的车次，所以选择一个出行距离最近的方案是符合直觉的方案「花费的钱，还有时间，这些暂时不考虑」
+
+   上海 杭州 丽水 武汉 南昌 永修      150KM 无法直接到达 600KM 500KM 无法直接到达    从图中可以看出，从上海出发，可以直接到达杭州，武汉，南昌，其距离分别为150KM, 600KM, 500KM, 因为离杭州最近， 所以选取其为下一个出发顶点「出发城市」
+   上海 杭州 丽水 武汉 南昌 永修      150KM 350KM 600KM 500KM 无法直接到达    杭州的下一个节点是丽水，所以上海从杭州出发到丽水的距离是350KN, 并且下一个顶点是丽水
+   上海 杭州 丽水 武汉 南昌 永修      150KM 350KM 600KM 500KM 无法直接到达    丽水距离武汉400KM, 所以上海到杭州到丽水到武汉这一条线路是350KM&#43;400KM = 750KM, 这大于上海直接出发到达的线路，所以上海到武汉不更新。下一个顶点武汉。"/>
+
+    <script src="/front/jquery-3.5.1.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
+</head><body><header>
+    <nav class="navbar" role="navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="/blog" title="home"  class="navbar-item">
+                    <span class="logo">
+                       <h1>自由.自在</h1>
+                </a>
+
+                
+                <a  href="https://github.com/liyu4" class="navbar-item is-hidden-desktop" title="GitHub">
+                </span>
+                </a>
+                
+                <a  href="https://twitter.com/liyu7771" class="navbar-item is-hidden-desktop" title="Twitter">
+                </span>
+                </a>
+                
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+           
+
+
+            <div class="navbar-menu">
+                <div class="navbar-start">
+                    
+                </div>
+
+                <div  class="navbar-end">
+                    
+                    <a href="https://github.com/liyu4" class="navbar-item is-hidden-touch" title="GitHub">
+                        <span class="icon"><i class='fab fa-github'></i></span>
+                    </a>
+                    
+                    <a href="https://twitter.com/liyu7771" class="navbar-item is-hidden-touch" title="Twitter">
+                        <span class="icon"><i class='fab fa-twitter'></i></span>
+                    </a>
+                    
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <script>
+        $(document).ready(function () {
+            $(".navbar-burger").click(function () {
+                $(".navbar-burger").toggleClass("is-active");
+                $(".navbar-menu").toggleClass("is-active");
+            })
+        })
+    </script>
+
+</header><main>
+<section class="section">
+    <article>
+        <div class="columns is-centered">
+            <div class="column max-800px">
+             <h1 class="title is-1">Dijkstra Shortest Path</h1>
+            <div class="title subtitle heading is-6">
+                <div class="columns is-vcentered is-mobile">
+                    
+                    <div class="column is-narrow">
+                        <img src="https://ftp.bmp.ovh/imgs/2020/09/d2c3225b7119bc23.jpg" class="author-image">
+                    </div>
+                    
+                    <div class="column">
+                        <p>杨修</p>
+                        <p><time>October 20, 2020</time> |
+                            3  minutes </p>
+                    </div>
+                </div>
+
+            <div class="content">
+            <h1 id="前言">前言</h1>
+<p>图论中有两种图，一种是有向图一种是无向图，比如微博，我关注了大V, 大V可能不关注我，这两者之间的关系是有向的。
+微信中添加了一个好友，那么两个人都是朋友关系，这两者的关系是最简单的无向图。</p>
+<p>还有一种图是加权图，图的顶点之间的边带有权重，比方说可以时间，可以是距离等物理特性。
+其中一个经典的算法就是求图中某一个顶点到另外一个顶点的最短距离。这其中比较有名的算法是dijkstra shortest path。</p>
+<h1 id="算法推导">算法推导</h1>
+<p>由于我家在十八线小县城，自上海出发，选择火车出行没有直达的车次，所以选择一个出行距离最近的方案是符合直觉的方案「花费的钱，还有时间，这些暂时不考虑」</p>
+<p><a href="https://imgchr.com/i/BSjumq"><img src="https://s1.ax1x.com/2020/10/20/BSjumq.png" alt="BSjumq.png"></a></p>
+<table>
+<thead>
+<tr>
+<th>上海</th>
+<th>杭州</th>
+<th>丽水</th>
+<th>武汉</th>
+<th>南昌</th>
+<th>永修</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>150KM</td>
+<td>无法直接到达</td>
+<td>600KM</td>
+<td>500KM</td>
+<td>无法直接到达</td>
+</tr>
+</tbody>
+</table>
+<p>从图中可以看出，从上海出发，可以直接到达杭州，武汉，南昌，其距离分别为150KM, 600KM, 500KM, 因为离杭州最近，
+所以选取其为下一个出发顶点「出发城市」</p>
+<table>
+<thead>
+<tr>
+<th>上海</th>
+<th>杭州</th>
+<th>丽水</th>
+<th>武汉</th>
+<th>南昌</th>
+<th>永修</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>150KM</td>
+<td>350KM</td>
+<td>600KM</td>
+<td>500KM</td>
+<td>无法直接到达</td>
+</tr>
+</tbody>
+</table>
+<p>杭州的下一个节点是丽水，所以上海从杭州出发到丽水的距离是350KN, 并且下一个顶点是丽水</p>
+<table>
+<thead>
+<tr>
+<th>上海</th>
+<th>杭州</th>
+<th>丽水</th>
+<th>武汉</th>
+<th>南昌</th>
+<th>永修</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>150KM</td>
+<td>350KM</td>
+<td>600KM</td>
+<td>500KM</td>
+<td>无法直接到达</td>
+</tr>
+</tbody>
+</table>
+<p>丽水距离武汉400KM, 所以上海到杭州到丽水到武汉这一条线路是350KM+400KM = 750KM,
+这大于上海直接出发到达的线路，所以上海到武汉不更新。下一个顶点武汉。</p>
+<table>
+<thead>
+<tr>
+<th>上海</th>
+<th>杭州</th>
+<th>丽水</th>
+<th>武汉</th>
+<th>南昌</th>
+<th>永修</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>150KM</td>
+<td>350KM</td>
+<td>600KM</td>
+<td>500KM</td>
+<td>860KM</td>
+</tr>
+</tbody>
+</table>
+<p>武汉可以到达永修也可以到达南昌，到达南昌的距离是600KM+300KM这比上海直接到要大，所以不更新
+上海到南昌的600KM, 武汉到达永修的距离是260KM, 所以上海通过这一条路径也就是上海&ndash;》杭州&ndash;》丽水&ndash;》武汉&ndash;》永修的距离是
+860KM。下一个顶点是永修。</p>
+<table>
+<thead>
+<tr>
+<th>上海</th>
+<th>杭州</th>
+<th>丽水</th>
+<th>武汉</th>
+<th>南昌</th>
+<th>永修</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>150KM</td>
+<td>350KM</td>
+<td>600KM</td>
+<td>500KM</td>
+<td>860KM</td>
+</tr>
+</tbody>
+</table>
+<p>永修无出发列车，真的是惨，所以这个顶点结束。回到上一个顶点南昌。</p>
+<table>
+<thead>
+<tr>
+<th>上海</th>
+<th>杭州</th>
+<th>丽水</th>
+<th>武汉</th>
+<th>南昌</th>
+<th>永修</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>150KM</td>
+<td>350KM</td>
+<td>600KM</td>
+<td>500KM</td>
+<td>540KM</td>
+</tr>
+</tbody>
+</table>
+<p>南昌永修的距离是500KM+40KM = 540KM &lt; 860KM，表格更新到540KM, 至此所有顶点都被访问了一次。
+上海到各城市的最短距离也如上表所示。</p>
+<h1 id="算法实现">算法实现</h1>
+<p>经过上面的分析我们发现，整个过程可以归纳为如下步骤：</p>
+<ul>
+<li>选取当前顶点</li>
+<li>寻找当前节点相接的顶点，并且记录下其权重</li>
+<li>选择相接顶点权重较低的节点作为下一个当前顶点</li>
+<li>重复上面三步</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+
+<span style="color:#f92672">import</span> (
+	<span style="color:#e6db74">&#34;fmt&#34;</span>
+	<span style="color:#e6db74">&#34;sort&#34;</span>
+)
+
+<span style="color:#75715e">// 构建加权图
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">City</span> <span style="color:#66d9ef">struct</span> {
+	<span style="color:#a6e22e">city2Route</span> <span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#f92672">*</span><span style="color:#a6e22e">Route</span>
+}
+
+<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">node</span> <span style="color:#66d9ef">struct</span> {
+	<span style="color:#a6e22e">name</span>     <span style="color:#66d9ef">string</span>
+	<span style="color:#a6e22e">distance</span> <span style="color:#66d9ef">int64</span>
+}
+
+<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Route</span> <span style="color:#66d9ef">struct</span> {
+	<span style="color:#a6e22e">name</span>    <span style="color:#66d9ef">string</span> <span style="color:#75715e">//当前城市包含的roters
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">routers</span> []<span style="color:#a6e22e">node</span>
+}
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">Instace</span>() <span style="color:#f92672">*</span><span style="color:#a6e22e">City</span> {
+	<span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">City</span>{<span style="color:#a6e22e">city2Route</span>: make(<span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#f92672">*</span><span style="color:#a6e22e">Route</span>)}
+}
+
+<span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">c</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">City</span>) <span style="color:#a6e22e">addCity</span>(<span style="color:#a6e22e">name</span> <span style="color:#66d9ef">string</span>) <span style="color:#f92672">*</span><span style="color:#a6e22e">Route</span> {
+	<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">city2Route</span>[<span style="color:#a6e22e">name</span>] = <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">Route</span>{<span style="color:#a6e22e">name</span>: <span style="color:#a6e22e">name</span>}
+	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">city2Route</span>[<span style="color:#a6e22e">name</span>]
+}
+
+<span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Route</span>) <span style="color:#a6e22e">addRoute</span>(<span style="color:#a6e22e">name</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">distance</span> <span style="color:#66d9ef">int64</span>) {
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">name</span> <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;&#34;</span> {
+		<span style="color:#66d9ef">return</span>
+	}
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">r</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">routers</span> = append(<span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">routers</span>, <span style="color:#a6e22e">node</span>{<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">distance</span>})
+		<span style="color:#66d9ef">return</span>
+	}
+	<span style="color:#a6e22e">newRoute</span> <span style="color:#f92672">:=</span> new(<span style="color:#a6e22e">Route</span>)
+	<span style="color:#a6e22e">newRoute</span>.<span style="color:#a6e22e">routers</span> = append(<span style="color:#a6e22e">newRoute</span>.<span style="color:#a6e22e">routers</span>, <span style="color:#a6e22e">node</span>{<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">distance</span>})
+	<span style="color:#a6e22e">r</span> = <span style="color:#a6e22e">newRoute</span>
+	<span style="color:#66d9ef">return</span>
+}
+
+<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">instance</span> = <span style="color:#a6e22e">Instace</span>()
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">build</span>() {
+	<span style="color:#a6e22e">shr</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">instance</span>.<span style="color:#a6e22e">addCity</span>(<span style="color:#e6db74">&#34;sh&#34;</span>)
+	<span style="color:#a6e22e">hzr</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">instance</span>.<span style="color:#a6e22e">addCity</span>(<span style="color:#e6db74">&#34;hz&#34;</span>)
+	<span style="color:#a6e22e">lsr</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">instance</span>.<span style="color:#a6e22e">addCity</span>(<span style="color:#e6db74">&#34;ls&#34;</span>)
+	<span style="color:#a6e22e">whr</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">instance</span>.<span style="color:#a6e22e">addCity</span>(<span style="color:#e6db74">&#34;wh&#34;</span>)
+	<span style="color:#a6e22e">ncr</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">instance</span>.<span style="color:#a6e22e">addCity</span>(<span style="color:#e6db74">&#34;nc&#34;</span>)
+	<span style="color:#a6e22e">yxr</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">instance</span>.<span style="color:#a6e22e">addCity</span>(<span style="color:#e6db74">&#34;yx&#34;</span>)
+
+	<span style="color:#a6e22e">shr</span>.<span style="color:#a6e22e">addRoute</span>(<span style="color:#e6db74">&#34;hz&#34;</span>, <span style="color:#ae81ff">150</span>)
+	<span style="color:#a6e22e">shr</span>.<span style="color:#a6e22e">addRoute</span>(<span style="color:#e6db74">&#34;wh&#34;</span>, <span style="color:#ae81ff">600</span>)
+	<span style="color:#a6e22e">shr</span>.<span style="color:#a6e22e">addRoute</span>(<span style="color:#e6db74">&#34;nc&#34;</span>, <span style="color:#ae81ff">500</span>)
+
+	<span style="color:#a6e22e">hzr</span>.<span style="color:#a6e22e">addRoute</span>(<span style="color:#e6db74">&#34;ls&#34;</span>, <span style="color:#ae81ff">200</span>)
+
+	<span style="color:#a6e22e">lsr</span>.<span style="color:#a6e22e">addRoute</span>(<span style="color:#e6db74">&#34;wh&#34;</span>, <span style="color:#ae81ff">400</span>)
+
+	<span style="color:#a6e22e">whr</span>.<span style="color:#a6e22e">addRoute</span>(<span style="color:#e6db74">&#34;nc&#34;</span>, <span style="color:#ae81ff">300</span>)
+	<span style="color:#a6e22e">whr</span>.<span style="color:#a6e22e">addRoute</span>(<span style="color:#e6db74">&#34;yx&#34;</span>, <span style="color:#ae81ff">260</span>)
+
+	<span style="color:#a6e22e">ncr</span>.<span style="color:#a6e22e">addRoute</span>(<span style="color:#e6db74">&#34;yx&#34;</span>, <span style="color:#ae81ff">40</span>)
+
+	<span style="color:#a6e22e">yxr</span>.<span style="color:#a6e22e">addRoute</span>(<span style="color:#e6db74">&#34;&#34;</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+
+}
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
+	<span style="color:#a6e22e">build</span>()
+	<span style="color:#a6e22e">depart</span> <span style="color:#f92672">:=</span> <span style="color:#e6db74">&#34;sh&#34;</span>
+	<span style="color:#a6e22e">startCity</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">instance</span>.<span style="color:#a6e22e">city2Route</span>[<span style="color:#a6e22e">depart</span>]
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">startCity</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
+		panic(<span style="color:#e6db74">&#34;not existed city&#34;</span>)
+	}
+
+	<span style="color:#75715e">// visited := make(map[string]struct{})
+</span><span style="color:#75715e"></span>
+	<span style="color:#a6e22e">from2DestDistance</span> <span style="color:#f92672">:=</span> make(<span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#66d9ef">int64</span>)
+	<span style="color:#a6e22e">priority</span> <span style="color:#f92672">:=</span> make([]<span style="color:#66d9ef">string</span>, <span style="color:#ae81ff">0</span>)
+	<span style="color:#a6e22e">priority</span> = append(<span style="color:#a6e22e">priority</span>, <span style="color:#a6e22e">startCity</span>.<span style="color:#a6e22e">name</span>)
+
+	<span style="color:#66d9ef">for</span> {
+		<span style="color:#75715e">// 维护一个访问队列，
+</span><span style="color:#75715e"></span>		<span style="color:#75715e">// 从优先级最高的队列开始，
+</span><span style="color:#75715e"></span>		<span style="color:#75715e">// 并且更新此队列，如果没有更新的节点，
+</span><span style="color:#75715e"></span>		<span style="color:#75715e">// 则从访问队列拿一个节点出来访问，直到所有的节点都被访问到
+</span><span style="color:#75715e"></span>		<span style="color:#75715e">// 从队列中选取一个
+</span><span style="color:#75715e"></span>		<span style="color:#a6e22e">len</span> <span style="color:#f92672">:=</span> len(<span style="color:#a6e22e">priority</span>)
+		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">len</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> {
+			<span style="color:#66d9ef">break</span>
+		}
+
+		<span style="color:#a6e22e">p</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">priority</span>[<span style="color:#a6e22e">len</span><span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]
+		<span style="color:#a6e22e">priority</span> = <span style="color:#a6e22e">priority</span>[:<span style="color:#a6e22e">len</span><span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]
+		<span style="color:#a6e22e">currentCity</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">instance</span>.<span style="color:#a6e22e">city2Route</span>[<span style="color:#a6e22e">p</span>]
+		<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">node</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">currentCity</span>.<span style="color:#a6e22e">routers</span> {
+			<span style="color:#a6e22e">newly</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">from2DestDistance</span>[<span style="color:#a6e22e">currentCity</span>.<span style="color:#a6e22e">name</span>] <span style="color:#f92672">+</span> <span style="color:#a6e22e">node</span>.<span style="color:#a6e22e">distance</span>
+			<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">value</span>, <span style="color:#a6e22e">ok</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">from2DestDistance</span>[<span style="color:#a6e22e">node</span>.<span style="color:#a6e22e">name</span>]; <span style="color:#a6e22e">ok</span> {
+				<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">value</span> &gt; <span style="color:#a6e22e">newly</span> {
+					<span style="color:#a6e22e">from2DestDistance</span>[<span style="color:#a6e22e">node</span>.<span style="color:#a6e22e">name</span>] = <span style="color:#a6e22e">newly</span>
+				}
+			} <span style="color:#66d9ef">else</span> {
+				<span style="color:#a6e22e">from2DestDistance</span>[<span style="color:#a6e22e">node</span>.<span style="color:#a6e22e">name</span>] = <span style="color:#a6e22e">newly</span>
+			}
+		}
+
+		<span style="color:#a6e22e">sort</span>.<span style="color:#a6e22e">Slice</span>(<span style="color:#a6e22e">currentCity</span>.<span style="color:#a6e22e">routers</span>, <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">i</span>, <span style="color:#a6e22e">j</span> <span style="color:#66d9ef">int</span>) <span style="color:#66d9ef">bool</span> {
+			<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">currentCity</span>.<span style="color:#a6e22e">routers</span>[<span style="color:#a6e22e">i</span>].<span style="color:#a6e22e">distance</span> &gt; <span style="color:#a6e22e">currentCity</span>.<span style="color:#a6e22e">routers</span>[<span style="color:#a6e22e">j</span>].<span style="color:#a6e22e">distance</span>
+		})
+
+		<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">route</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">currentCity</span>.<span style="color:#a6e22e">routers</span> {
+			<span style="color:#a6e22e">priority</span> = append(<span style="color:#a6e22e">priority</span>, <span style="color:#a6e22e">route</span>.<span style="color:#a6e22e">name</span>)
+		}
+	}
+
+	<span style="color:#75715e">// TODO  优先级队列会出现重复的情况，需要去重和优先级提升
+</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">key</span>, <span style="color:#a6e22e">each</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">from2DestDistance</span> {
+		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;from: %v to dest city: %v, nearest distance:%vkm\n&#34;</span>, <span style="color:#a6e22e">depart</span>, <span style="color:#a6e22e">key</span>, <span style="color:#a6e22e">each</span>)
+	}
+}
+
+<span style="color:#75715e">// from: sh to dest city: hz, nearest distance:150km
+</span><span style="color:#75715e">// from: sh to dest city: wh, nearest distance:600km
+</span><span style="color:#75715e">// from: sh to dest city: nc, nearest distance:500km
+</span><span style="color:#75715e">// from: sh to dest city: ls, nearest distance:350km
+</span><span style="color:#75715e">// from: sh to dest city: yx, nearest distance:540km
+</span><span style="color:#75715e"></span>
+</code></pre></div><h1 id="总结">总结</h1>
+<p>这个算法还是比较有趣的，每一个顶点被访问之后，就说明遍历结束，有意思的是，顶点是有可能冲突的，需要注意冲突之后的upgrade。
+另外算法模型也是比较清晰的，可以使用递归来实现，但是需要注意深度的问题。</p>
+
+            </div>
+            </div>
+        </div>
+    </article>
+
+
+    <section class="section">
+        <div class="columns is-centered">
+            <div class="column max-800px">
+                <div class="columns is-mobile">
+                    <div class="column has-text-left">
+                        
+                        <p>Previous post</p>
+                        <a href="/2020/10/dfs-and-bfs/">DFS and BFS</a>
+                        
+                    </div>
+                    <div class="column has-text-right">
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</section>
+
+        </main><footer class="footer">
+    <div class="container">
+        <div class="columns has-text-centered">
+            
+            <div class="column is-narrow">
+                <a href="/privacy" class="">Privacy</a>
+            </div>
+            
+        </div>
+    </div>
+</footer></body>
+</html>

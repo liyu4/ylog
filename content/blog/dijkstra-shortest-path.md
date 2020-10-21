@@ -68,6 +68,143 @@ draft: true
 * 选择相接顶点权重较低的节点作为下一个当前顶点
 * 重复上面三步
 
-# 算法变形和实现
+
+```go
+package main
+
+import (
+	"fmt"
+	"sort"
+)
+
+// 构建加权图
+
+type City struct {
+	city2Route map[string]*Route
+}
+
+type node struct {
+	name     string
+	distance int64
+}
+
+type Route struct {
+	name    string //当前城市包含的roters
+	routers []node
+}
+
+func Instace() *City {
+	return &City{city2Route: make(map[string]*Route)}
+}
+
+func (c *City) addCity(name string) *Route {
+	c.city2Route[name] = &Route{name: name}
+	return c.city2Route[name]
+}
+
+func (r *Route) addRoute(name string, distance int64) {
+	if name == "" {
+		return
+	}
+	if r != nil {
+		r.routers = append(r.routers, node{name, distance})
+		return
+	}
+	newRoute := new(Route)
+	newRoute.routers = append(newRoute.routers, node{name, distance})
+	r = newRoute
+	return
+}
+
+var instance = Instace()
+
+func build() {
+	shr := instance.addCity("sh")
+	hzr := instance.addCity("hz")
+	lsr := instance.addCity("ls")
+	whr := instance.addCity("wh")
+	ncr := instance.addCity("nc")
+	yxr := instance.addCity("yx")
+
+	shr.addRoute("hz", 150)
+	shr.addRoute("wh", 600)
+	shr.addRoute("nc", 500)
+
+	hzr.addRoute("ls", 200)
+
+	lsr.addRoute("wh", 400)
+
+	whr.addRoute("nc", 300)
+	whr.addRoute("yx", 260)
+
+	ncr.addRoute("yx", 40)
+
+	yxr.addRoute("", -1)
+
+}
+
+func main() {
+	build()
+	depart := "sh"
+	startCity := instance.city2Route[depart]
+	if startCity == nil {
+		panic("not existed city")
+	}
+
+	// visited := make(map[string]struct{})
+
+	from2DestDistance := make(map[string]int64)
+	priority := make([]string, 0)
+	priority = append(priority, startCity.name)
+
+	for {
+		// 维护一个访问队列，
+		// 从优先级最高的队列开始，
+		// 并且更新此队列，如果没有更新的节点，
+		// 则从访问队列拿一个节点出来访问，直到所有的节点都被访问到
+		// 从队列中选取一个
+		len := len(priority)
+		if len == 0 {
+			break
+		}
+
+		p := priority[len-1]
+		priority = priority[:len-1]
+		currentCity := instance.city2Route[p]
+		for _, node := range currentCity.routers {
+			newly := from2DestDistance[currentCity.name] + node.distance
+			if value, ok := from2DestDistance[node.name]; ok {
+				if value > newly {
+					from2DestDistance[node.name] = newly
+				}
+			} else {
+				from2DestDistance[node.name] = newly
+			}
+		}
+
+		sort.Slice(currentCity.routers, func(i, j int) bool {
+			return currentCity.routers[i].distance > currentCity.routers[j].distance
+		})
+
+		for _, route := range currentCity.routers {
+			priority = append(priority, route.name)
+		}
+	}
+
+	// TODO  优先级队列会出现重复的情况，需要去重和优先级提升
+	for key, each := range from2DestDistance {
+		fmt.Printf("from: %v to dest city: %v, nearest distance:%vkm\n", depart, key, each)
+	}
+}
+
+// from: sh to dest city: hz, nearest distance:150km
+// from: sh to dest city: wh, nearest distance:600km
+// from: sh to dest city: nc, nearest distance:500km
+// from: sh to dest city: ls, nearest distance:350km
+// from: sh to dest city: yx, nearest distance:540km
+
+```
 
 # 总结
+这个算法还是比较有趣的，每一个顶点被访问之后，就说明遍历结束，有意思的是，顶点是有可能冲突的，需要注意冲突之后的upgrade。
+另外算法模型也是比较清晰的，可以使用递归来实现，但是需要注意深度的问题。

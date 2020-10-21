@@ -12,12 +12,18 @@
     
     
     <item>
-      <title>Dijkstr Shortest Path</title>
-      <link>/2020/10/dijkstr-shortest-path/</link>
+      <title>Dijkstra Shortest Path</title>
+      <link>/2020/10/dijkstra-shortest-path/</link>
       <pubDate>Tue, 20 Oct 2020 14:26:24 +0800</pubDate>
       
-      <guid>/2020/10/dijkstr-shortest-path/</guid>
-      <description></description>
+      <guid>/2020/10/dijkstra-shortest-path/</guid>
+      <description>前言 图论中有两种图，一种是有向图一种是无向图，比如微博，我关注了大V, 大V可能不关注我，这两者之间的关系是有向的。 微信中添加了一个好友，那么两个人都是朋友关系，这两者的关系是最简单的无向图。
+还有一种图是加权图，图的顶点之间的边带有权重，比方说可以时间，可以是距离等物理特性。 其中一个经典的算法就是求图中某一个顶点到另外一个顶点的最短距离。这其中比较有名的算法是dijkstra shortest path。
+算法推导 由于我家在十八线小县城，自上海出发，选择火车出行没有直达的车次，所以选择一个出行距离最近的方案是符合直觉的方案「花费的钱，还有时间，这些暂时不考虑」
+
+   上海 杭州 丽水 武汉 南昌 永修      150KM 无法直接到达 600KM 500KM 无法直接到达    从图中可以看出，从上海出发，可以直接到达杭州，武汉，南昌，其距离分别为150KM, 600KM, 500KM, 因为离杭州最近， 所以选取其为下一个出发顶点「出发城市」
+   上海 杭州 丽水 武汉 南昌 永修      150KM 350KM 600KM 500KM 无法直接到达    杭州的下一个节点是丽水，所以上海从杭州出发到丽水的距离是350KN, 并且下一个顶点是丽水
+   上海 杭州 丽水 武汉 南昌 永修      150KM 350KM 600KM 500KM 无法直接到达    丽水距离武汉400KM, 所以上海到杭州到丽水到武汉这一条线路是350KM+400KM = 750KM, 这大于上海直接出发到达的线路，所以上海到武汉不更新。下一个顶点武汉。</description>
     </item>
     
     <item>
